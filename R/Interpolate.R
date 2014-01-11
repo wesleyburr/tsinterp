@@ -8,11 +8,13 @@
 #  ** ADAPT SO PRECISION IS USER-CONTROLLED
 #
 ################################################################################
-interpolate <- function(z, gap, maxit, progress=FALSE, sigClip=0.999) {
+interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1) {
 
-  # manual parameter set -- figure out how to fix parApply later
-  delT <- 1.0
-  # sigClip <- 0.99
+  stopifnot(is.numeric(delT), delT > 0, 
+            is.numeric(sigClip), sigClip > 0, sigClip <= 1.0,
+            is.logical(progress),
+            is.numeric(maxit), maxit > 0,
+            is.numeric(z))
 
   cat("Iteration 0:  N/A  (")
   gapTrue <- rep(NA, length(z)) 
@@ -126,7 +128,7 @@ interpolate <- function(z, gap, maxit, progress=FALSE, sigClip=0.999) {
 
   while(!converge) {
     cat(paste("Iteration ", p, ": ", sep=""))
-    z1 <- interpolate2(zI=z0, gap=gap, blocks=blocks, delT=delT, sigClip=sigClip,
+    z1 <- .interpolate2(zI=z0, gap=gap, blocks=blocks, delT=delT, sigClip=sigClip,
                        freqSave=freqSave, progress=progress)
     diffC <- max(abs(z1[[1]] - z0)) 
 
@@ -168,13 +170,13 @@ interpolate <- function(z, gap, maxit, progress=FALSE, sigClip=0.999) {
 
 ################################################################################
 #
-#   interpolate2
+#   .interpolate2
 #
 #   Assumes data has been pre-interpolated at least once
 #   and that function is in iterative loop
 #
 ################################################################################
-interpolate2 <- function(zI, gap, blocks, delT, sigClip, freqSave, progress) {
+.interpolate2 <- function(zI, gap, blocks, delT, sigClip, freqSave, progress) {
 
   # setup parameters
   gapTrue <- rep(NA, length(zI)) 

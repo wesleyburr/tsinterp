@@ -150,7 +150,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   neh <- max(2*maxGap, 50)
   clipMax <- max(abs(max(zI2a)), abs(min(zI2a)))
 
-  Wt0a <- WtEstimator(zI2a, zI2b, gapTrueA, gapTrueB, dT=delT, blocksA, 
+  Wt0a <- estimateWt(zI2a, zI2b, gapTrueA, gapTrueB, dT=delT, blocksA, 
                       neh, maxlag, clipMax) 
 
   # xd1 = zI2a; xd2 = zI2b; ok1 = gapTrueA; ok2 = gapTrueB; dT = delT; blocks = blocksA;
@@ -178,7 +178,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
 
   while(!converge) {
     cat(paste("Iteration ", p, ": ", sep=""))
-    z1 <- BiVarInt2(zIa=z0a, zIb=z0b, gap1=gap1, gap2=gap2, blocks=blocksA, delT=delT, sigClip=sigClip,
+    z1 <- .BiVarInt2(zIa=z0a, zIb=z0b, gap1=gap1, gap2=gap2, blocks=blocksA, delT=delT, sigClip=sigClip,
                        freqSaveA=freqSaveA, freqSaveB=freqSaveB, progress=progress)
     # zIa=z0a; zIb=z0b; 
     diffC <- max(abs(z1[[1]] - z0a)) 
@@ -221,13 +221,13 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
 
 ################################################################################
 #
-#   BiVarInt2
+#   .BiVarInt2
 #
 #   Assumes data has been pre-interpolated at least once
 #   and that function is in iterative loop
 #
 ################################################################################
-BiVarInt2 <- function(zIa, zIb, gap1, gap2, blocks, delT, sigClip, freqSaveA, freqSaveB, progress) {
+.BiVarInt2 <- function(zIa, zIb, gap1, gap2, blocks, delT, sigClip, freqSaveA, freqSaveB, progress) {
 
   # setup parameters
   gapTrueA <- rep(NA, length(zIa)) 
@@ -345,7 +345,7 @@ BiVarInt2 <- function(zIa, zIb, gap1, gap2, blocks, delT, sigClip, freqSaveA, fr
   neh <- max(2*maxGap, 50)
   clipMax <- max(abs(max(zI2a)), abs(min(zI2a)))
 
-  Wt0a <- WtEstimator(zI2a, zI2b, gapTrueA, gapTrueB, dT=delT, blocks, 
+  Wt0a <- estimateWt(zI2a, zI2b, gapTrueA, gapTrueB, dT=delT, blocks, 
                       neh, maxlag, clipMax) 
 
   zIa[gap1] <- Mt0a[gap1] + Tt0a[gap1] + Wt0a[gap1]

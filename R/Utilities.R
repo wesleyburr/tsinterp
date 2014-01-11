@@ -9,7 +9,7 @@
 #    mwXSwiener.
 #
 #######################################################################
-"WtEstimator" <- function(xd1, xd2, ok1, ok2, dT, blocks, neh, maxlag, clipMax) {
+"estimateWt" <- function(xd1, xd2, ok1, ok2, dT, blocks, neh, maxlag, clipMax) {
 
   require("multitaper")
   if(length(which(is.na(xd1))) > 0 | length(which(is.na(xd2))) > 0) {
@@ -66,7 +66,7 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
     # Algorithm step 1: spectrum/Ftest pilot estimate
     pilot <- spec.mtm(x, dT=dT, nw=nw, k=k, Ftest=TRUE, plot=FALSE)
 
-if(is.null(freqIn)) {
+  if(is.null(freqIn)) {
     ################################################################################
     # Algorithm step 2: estimate significant peaks (sigClip)
     fmesh <- pilot$mtm$Ftest
@@ -246,7 +246,6 @@ removePeriod <- function(xd, f0, nw, k, deltaT, warn=FALSE, prec=1e-10, sigClip)
     nFFT <- findPowers(N,f0,Nyq,prec.st)
     prec.st <- prec.st*10
   }
-#  if(prec.st > 1e-10 && warn) { warning("Was unable to find high-precision nFFT / df values for chosen f0.")}
 
   spec <- spec.mtm(xd,nw=nw,k=k,returnInternals=T,Ftest=T,plot=F,nFFT=nFFT,maxAdaptiveIterations=0,
                    dT=deltaT)
