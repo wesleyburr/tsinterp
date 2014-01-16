@@ -35,7 +35,7 @@
   #  ** wants lots of 'good' data to its left
 
   for(m in 1:length(blocks[, 1]))  {
-    rng <- (blocks[m, 1] - neh):(blocks[m, 2] + neh)
+    rng <- max(1, (blocks[m, 1] - neh)):(blocks[m, 2] + neh)
     fill <- mwXSwiener(xd1[rng], xd2[rng], ok1[rng], ok2[rng], R11, R12, R21, R22)
     fill[which(abs(fill) > clipMax)] <- sign(fill[which(abs(fill) > clipMax)])*clipMax
     yd1[blocks[m, 1]:blocks[m, 2]] <- fill[(neh+1):(neh+blocks[m, 3])]
