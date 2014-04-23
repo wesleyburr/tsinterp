@@ -31,7 +31,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   # estimate Mt0 and Tt0
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
 
-  TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, dT=delT, nw=5, k=8,
+  TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, deltat=delT, nw=5, k=8,
                       sigClip=sigClip, progress=progress)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
@@ -46,7 +46,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   while(!converge) {
     cat(".")
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
-    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
+    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, deltat=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSave)
     freqRet <- attr(TtTmp, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
@@ -85,7 +85,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   clipMax <- max(abs(max(zI2)), abs(min(zI2)))
   # cat(paste("ClipMax = ", clipMax, "\n", sep=""))
   # setup ACV
-  spec <- spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, dT=delT)
+  spec <- spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, deltat=delT)
   acv <- SpecToACV(spec,maxlag=N)
   # loop on the blocks; NOT AS EFFICIENT?
   # cat(paste("ACV: ", acv[1:4], "\n", sep=""))
@@ -186,7 +186,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   # estimate Mt0 and Tt0
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
 
-  TtTmp <- estimateTt(x=zI-MtP, epsilon=1e-6, dT=delT, nw=5, k=8, 
+  TtTmp <- estimateTt(x=zI-MtP, epsilon=1e-6, deltat=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSave)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
@@ -198,7 +198,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   converge <- FALSE
   while(!converge) {
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
-    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
+    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, deltat=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSave)
     freqRet <- attr(TtTmp, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
@@ -238,7 +238,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   y <- zI2
 
   # setup ACV
-  spec <- spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, dT=delT)
+  spec <- spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, deltat=delT)
   acv <- SpecToACV(spec,maxlag=N)
 
   for(n in 1:length(blocks[, 1])) { # loop on the blocks

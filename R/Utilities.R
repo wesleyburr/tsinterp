@@ -18,8 +18,8 @@
   # need the spectrum to be big enough to provide all the lags necessary ...
   nFFT <- 2^(floor(log2(3*maxlag))+2)
 
-  sp1 <- spec.mtm(xd1, dT=dT, nFFT=nFFT, plot=FALSE, returnInternals=TRUE)
-  sp2 <- spec.mtm(xd2, dT=dT, nFFT=nFFT, plot=FALSE, returnInternals=TRUE)
+  sp1 <- spec.mtm(xd1, deltat=dT, nFFT=nFFT, plot=FALSE, returnInternals=TRUE)
+  sp2 <- spec.mtm(xd2, deltat=dT, nFFT=nFFT, plot=FALSE, returnInternals=TRUE)
   R11 <- SpecToACVdual(sp1, maxlag=2*maxlag)
   R22 <- SpecToACVdual(sp2, maxlag=2*maxlag)
   R12 <- spec.mtm.cross(sp1, sp2, maxlag=2*maxlag)
@@ -64,7 +64,7 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
 
     ################################################################################
     # Algorithm step 1: spectrum/Ftest pilot estimate
-    pilot <- spec.mtm(x, dT=dT, nw=nw, k=k, Ftest=TRUE, plot=FALSE)
+    pilot <- spec.mtm(x, deltat=dT, nw=nw, k=k, Ftest=TRUE, plot=FALSE)
 
   if(is.null(freqIn)) {
     ################################################################################
@@ -122,7 +122,7 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
 
         if(!converge) {
             nFFT <- 2^pwrOrig * 2^k2 * 3^k3 * 5^k5 * 7^k7
-            tmpSpec <- spec.mtm(x, dT=dT, nw=5, k=8, plot=FALSE, Ftest=TRUE,
+            tmpSpec <- spec.mtm(x, deltat=dT, nw=5, k=8, plot=FALSE, Ftest=TRUE,
                                 nFFT=nFFT)
             dF <- tmpSpec$freq[2]
             f0loc <- which(abs(tmpSpec$freq - f0) <= dF)
@@ -232,7 +232,7 @@ removePeriod <- function(xd, f0, nw, k, deltaT, warn=FALSE, prec=1e-10, sigClip)
    
   # check to make sure f0 is reasonable, otherwise warn
   N <- length(xd)
-  spec.t <- spec.mtm(xd,nw=nw,k=k,Ftest=T,plot=F,nFFT=2^(floor(log(N,2))+2),dT=deltaT)
+  spec.t <- spec.mtm(xd,nw=nw,k=k,Ftest=T,plot=F,nFFT=2^(floor(log(N,2))+2),deltat=deltaT)
   idx <- max(which(spec.t$freq < f0))
   if( max(spec.t$mtm$Ftest[idx],spec.t$mtm$Ftest[idx]) < qf(sigClip,2,(2*k-2)) && warn ) {
     warning("Ftest at frequency f0 not significant. Are you sure you want to remove this?")
@@ -248,7 +248,7 @@ removePeriod <- function(xd, f0, nw, k, deltaT, warn=FALSE, prec=1e-10, sigClip)
   }
 
   spec <- spec.mtm(xd,nw=nw,k=k,returnInternals=T,Ftest=T,plot=F,nFFT=nFFT,maxAdaptiveIterations=0,
-                   dT=deltaT)
+                   deltat=deltaT)
 
   # parameter setup
   w <- nw/N/deltaT
