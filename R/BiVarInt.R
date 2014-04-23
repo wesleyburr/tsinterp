@@ -20,7 +20,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   # estimate Mt0 and Tt0
   MtPa <- estimateMt(x=zIa, N=N, nw=5, k=8, pMax=2)
 
-  TtTmpa <- estimateTt(x=zIa - MtPa, epsilon=1e-6, deltat=delT, nw=5, k=8,
+  TtTmpa <- estimateTt(x=zIa - MtPa, epsilon=1e-6, dT=delT, nw=5, k=8,
                       sigClip=sigClip, progress=progress)
   freqRet <- attr(TtTmpa, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
@@ -35,7 +35,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   while(!converge) {
     cat(".")
     MtJa <- estimateMt(x=zIa-TtPa, N=N, nw=5, k=8, pMax=2)
-    TtTmpa <- estimateTt(x=zIa-MtJa, epsilon=1e-6, deltat=delT, nw=5, k=8, 
+    TtTmpa <- estimateTt(x=zIa-MtJa, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSaveA)
     freqRet <- attr(TtTmpa, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
@@ -89,7 +89,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   # estimate Mt0 and Tt0
   MtPb <- estimateMt(x=zIb, N=N, nw=5, k=8, pMax=2)
 
-  TtTmpb <- estimateTt(x=zIb - MtPb, epsilon=1e-6, deltat=delT, nw=5, k=8,
+  TtTmpb <- estimateTt(x=zIb - MtPb, epsilon=1e-6, dT=delT, nw=5, k=8,
                       sigClip=sigClip, progress=progress)
   freqRet <- attr(TtTmpb, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
@@ -104,7 +104,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   while(!converge) {
     cat(".")
     MtJb <- estimateMt(x=zIb-TtPb, N=N, nw=5, k=8, pMax=2)
-    TtTmpb <- estimateTt(x=zIb-MtJb, epsilon=1e-6, deltat=delT, nw=5, k=8, 
+    TtTmpb <- estimateTt(x=zIb-MtJb, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSaveB)
     freqRet <- attr(TtTmpb, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
@@ -150,7 +150,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   neh <- max(2*maxGap, 50)
   clipMax <- max(abs(max(zI2a)), abs(min(zI2a)))
 
-  Wt0a <- estimateWt(zI2a, zI2b, gapTrueA, gapTrueB, deltat=delT, blocksA, 
+  Wt0a <- estimateWt(zI2a, zI2b, gapTrueA, gapTrueB, dT=delT, blocksA, 
                       neh, maxlag, clipMax) 
 
   # xd1 = zI2a; xd2 = zI2b; ok1 = gapTrueA; ok2 = gapTrueB; deltat = delT; blocks = blocksA;
@@ -237,7 +237,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   # estimate Mt0 and Tt0
   MtPa <- estimateMt(x=zIa, N=N, nw=5, k=8, pMax=2)
 
-  TtTmpa <- estimateTt(x=zIa-MtPa, epsilon=1e-6, deltat=delT, nw=5, k=8, 
+  TtTmpa <- estimateTt(x=zIa-MtPa, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSaveA)
   freqRet <- attr(TtTmpa, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
@@ -249,7 +249,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   converge <- FALSE
   while(!converge) {
     MtJa <- estimateMt(x=zIa-TtPa, N=N, nw=5, k=8, pMax=2)
-    TtTmpa <- estimateTt(x=zIa-MtJa, epsilon=1e-6, deltat=delT, nw=5, k=8, 
+    TtTmpa <- estimateTt(x=zIa-MtJa, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSaveA)
     freqRet <- attr(TtTmpa, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
@@ -288,7 +288,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   # estimate Mt0 and Tt0
   MtPb <- estimateMt(x=zIb, N=N, nw=5, k=8, pMax=2)
 
-  TtTmpb <- estimateTt(x=zIb-MtPb, epsilon=1e-6, deltat=delT, nw=5, k=8, 
+  TtTmpb <- estimateTt(x=zIb-MtPb, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSaveB)
   freqRet <- attr(TtTmpb, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
@@ -300,7 +300,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   converge <- FALSE
   while(!converge) {
     MtJb <- estimateMt(x=zIb-TtPb, N=N, nw=5, k=8, pMax=2)
-    TtTmpb <- estimateTt(x=zIb-MtJb, epsilon=1e-6, deltat=delT, nw=5, k=8, 
+    TtTmpb <- estimateTt(x=zIb-MtJb, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSaveB)
     freqRet <- attr(TtTmpb, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
@@ -345,7 +345,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   neh <- max(2*maxGap, 50)
   clipMax <- max(abs(max(zI2a)), abs(min(zI2a)))
 
-  Wt0a <- estimateWt(zI2a, zI2b, gapTrueA, gapTrueB, deltat=delT, blocks, 
+  Wt0a <- estimateWt(zI2a, zI2b, gapTrueA, gapTrueB, dT=delT, blocks, 
                       neh, maxlag, clipMax) 
 
   zIa[gap1] <- Mt0a[gap1] + Tt0a[gap1] + Wt0a[gap1]

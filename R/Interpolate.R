@@ -31,7 +31,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   # estimate Mt0 and Tt0
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
 
-  TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, deltat=delT, nw=5, k=8,
+  TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, dT=delT, nw=5, k=8,
                       sigClip=sigClip, progress=progress)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
@@ -46,7 +46,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   while(!converge) {
     cat(".")
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
-    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, deltat=delT, nw=5, k=8, 
+    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSave)
     freqRet <- attr(TtTmp, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
@@ -186,7 +186,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   # estimate Mt0 and Tt0
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
 
-  TtTmp <- estimateTt(x=zI-MtP, epsilon=1e-6, deltat=delT, nw=5, k=8, 
+  TtTmp <- estimateTt(x=zI-MtP, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSave)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
@@ -198,7 +198,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   converge <- FALSE
   while(!converge) {
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
-    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, deltat=delT, nw=5, k=8, 
+    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSave)
     freqRet <- attr(TtTmp, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
