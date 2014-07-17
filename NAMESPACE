@@ -1,0 +1,9 @@
+useDynLib(tsinterp, .registration = TRUE)
+
+export(interpolate,
+       BiVarInt, 
+       dpssap,
+       findBlocks,
+       linInt)
+
+importFrom(multitaper, dpss, spec.mtm)
