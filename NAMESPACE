@@ -4,6 +4,7 @@ export(interpolate,
        BiVarInt, 
        dpssap,
        findBlocks,
-       linInt)
+       linInt, 
+       twoLoopCleanup)
 
 importFrom(multitaper, dpss, spec.mtm)

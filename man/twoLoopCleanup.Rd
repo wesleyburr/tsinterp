@@ -1,5 +1,5 @@
 \name{twoLoopCleanup}
-\alias{twoLoop}
+\alias{twoLoopCleanup}
 \title{Univariate Interpolation: Implementation}
 \description{
     Univariate interpolation of gappy time series: implementation wrapping \link{interpolate} in some logic.
@@ -29,6 +29,6 @@
    z1[which(flux$S == FALSE)] <- NA
 
    # Unfortunately, not fast enough to run for CRAN checks
-   sagInt <- twoLoopCleanup(z1, blkL = 100)
+   #sagInt <- twoLoopCleanup(z1, blkL = 100)
 
 }
