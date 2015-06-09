@@ -9,7 +9,8 @@
 #
 ################################################################################
 interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1) {
-
+ 
+  
   stopifnot(is.numeric(delT), delT > 0, 
             is.numeric(sigClip), sigClip > 0, sigClip <= 1.0,
             is.logical(progress),
@@ -27,10 +28,9 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
 
   # parameters
   N <- length(z)
-
   # estimate Mt0 and Tt0
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
-
+  
   TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, dT=delT, nw=5, k=8,
                       sigClip=sigClip, progress=progress)
   freqRet <- attr(TtTmp, "Frequency")

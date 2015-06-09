@@ -1,0 +1,15 @@
+
+*.pper
+
+.Rhistory
+.Rproj.user
+
+*.Rproj
+
+.Rbuildignore
+
+*.so
+
+*.o
+
+*.out
