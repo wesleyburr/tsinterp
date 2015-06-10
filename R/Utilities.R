@@ -33,14 +33,30 @@
   #  ** if neh > blocks[m, 1] this will crash
   #  ** wants lots of 'good' data to its left
 
-  for(m in 1:length(blocks[, 1]))  {
-    rng <- max(1, (blocks[m, 1] - neh)):(blocks[m, 2] + neh)
-    fill <- mwXSwiener(xd1[rng], xd2[rng], ok1[rng], ok2[rng], R11, R12, R21, R22)
-    fill[which(abs(fill) > clipMax)] <- sign(fill[which(abs(fill) > clipMax)])*clipMax
-    yd1[blocks[m, 1]:blocks[m, 2]] <- fill[(neh+1):(neh+blocks[m, 3])]
+  # Can be done in parallel ? 
+  cat("Len blocks ", length(blocks[, 1]), "\n")
+  cat("Dim yd1 " , dim(yd1), "\n")
+  sfInit(parallel = TRUE, cpus = 4)
+  sfExport("blocks", "neh", "xd1", "xd2", "ok1", "ok2", "R11",
+           "R12", "R21", "R22", "clipMax")
+  interval <- 1:length(blocks[, 1])
+  res <- (sfLapply(interval, funcParallel2))
+  sfStop()
+  for(m in interval) {
+    yd1[blocks[m, 1]:blocks[m, 2]] <- res[[m]] 
   }
+  
+  cat("Done \n")
   # cat("\n")
   yd1
+}
+
+funcParallel2 <- function(m) {
+  rng <- max(1, (blocks[m, 1] - neh)):(blocks[m, 2] + neh)
+  fill <- mwXSwiener(xd1[rng], xd2[rng], ok1[rng], ok2[rng], R11, R12, R21, R22)
+  pos <- which(abs(fill) > clipMax)
+  fill[pos] <- sign(fill[pos])*clipMax
+  fill[(neh+1):(neh+blocks[m, 3])]
 }
 
 estimateMt <- function(x, N, nw, k, pMax) {
@@ -58,7 +74,7 @@ estimateMt <- function(x, N, nw, k, pMax) {
 
 
 
-func <- function(j) {
+funcParallel1 <- function(j) {
   if(progress) {
     cat(".")  
   }
@@ -95,7 +111,7 @@ func <- function(j) {
             }
           }
         }}}}
-  freqFinal[j] <- fF
+   fF
 }
 
 estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NULL) {
@@ -144,7 +160,8 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
       sfInit(parallel = TRUE, cpus = 2)
       sfExport("progress", "pilot", "floc", "max7", "max5", "max3", "max2", "dT",
                "x", "dFI", "epsilon", "freqFinal")
-      freqFinal <- unlist(sfLapply(1:length(floc), func))
+      freqFinal <- unlist(sfLapply(1:length(floc), funcParallel1))
+      cat("Stoped")
       sfStop();
       
       if(progress) {
@@ -346,10 +363,11 @@ dpssap <- function(V, maxdeg) {
     K <- length(V[1, ])
     P <- maxdeg + 1
     timeArr <- 1:N
-
-    R <- matrix(data=0, nrow=N, ncol=P)
-    U <- matrix(data=0, nrow=K, ncol=P)
-
+    tmpVec <- rep(0, P)
+    R <- matrix(data=tmpVec, nrow=N, ncol=P)
+    U <- matrix(data=tmpVec, nrow=K, ncol=P)
+    #cat("DIM R is ", dim(R), "\n")
+    #cat("Dim U is ", dim(U), "\n")
     # Setup centered time index
     midTime <- (1+N) / 2
     scl <- 2/(N-1)
@@ -429,7 +447,8 @@ dpssap <- function(V, maxdeg) {
       blocks <- matrix(data=0, nrow=1, ncol=3)
       blocks[1, 1:2] <- c(mask[1], mask[length(mask)])
     } else {
-      blocks <- matrix(data=0,nrow=length(mask),ncol=3)
+      tmpVec <- rep(0, 3)
+      blocks <- matrix(data=tmpVec,nrow=length(mask),ncol=3)
       blocks[1, 1] <- mask[1]
       blocks[1, 2] <- mask[diffs[1]]
       k <- 1
@@ -481,6 +500,7 @@ dpssap <- function(V, maxdeg) {
   s <- spec$spec
   dF <- spec$freq[2] 
   x <- matrix(data=0,nrow=(spec$mtm$nfreqs-1)*2,ncol=1)
+  cat("dim X is ", dim(x), "/n");
   x[1:spec$mtm$nfreqs] = s*dF
   x[(spec$mtm$nfreqs+1):length(x)] <- x[(spec$mtm$nfreqs-1):2]
   x <- as.complex(x)
@@ -549,4 +569,8 @@ dpssap <- function(V, maxdeg) {
   attr(x, "MaxLag") <- maxlag
   x
 }
+
+
+
+
 

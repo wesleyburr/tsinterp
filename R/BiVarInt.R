@@ -416,7 +416,7 @@ mwXSwiener <- function(xd1, xd2, ok1, ok2, R11, R12, R21, R22) {
 
   yd1 <- xd1
   yd2 <- xd2
-
+  # Can be done in parallel ?
   for(m in 1:n1) {
     if(is.na(ok1[m])) {
       idx1 <- m - tag1
