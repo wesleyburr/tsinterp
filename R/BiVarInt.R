@@ -432,3 +432,6 @@ mwXSwiener <- function(xd1, xd2, ok1, ok2, R11, R12, R21, R22) {
   yd1
 }
 
+
+
+

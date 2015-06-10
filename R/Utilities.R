@@ -155,13 +155,11 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
       max7 <- log(maxFFT, base=7)
   
       freqFinal <- matrix(data=0, nrow=length(floc), ncol=1)
-  
       
       sfInit(parallel = TRUE, cpus = 2)
       sfExport("progress", "pilot", "floc", "max7", "max5", "max3", "max2", "dT",
                "x", "dFI", "epsilon", "freqFinal")
       freqFinal <- unlist(sfLapply(1:length(floc), funcParallel1))
-      cat("Stoped")
       sfStop();
       
       if(progress) {
@@ -500,7 +498,7 @@ dpssap <- function(V, maxdeg) {
   s <- spec$spec
   dF <- spec$freq[2] 
   x <- matrix(data=0,nrow=(spec$mtm$nfreqs-1)*2,ncol=1)
-  cat("dim X is ", dim(x), "/n");
+  #cat("dim X is ", dim(x), "/n");
   x[1:spec$mtm$nfreqs] = s*dF
   x[(spec$mtm$nfreqs+1):length(x)] <- x[(spec$mtm$nfreqs-1):2]
   x <- as.complex(x)

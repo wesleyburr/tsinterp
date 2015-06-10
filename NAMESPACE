@@ -8,5 +8,4 @@ export(interpolate,
        twoLoopCleanup)
 
 importFrom(multitaper, dpss, spec.mtm)
-import(snowfall)
-
+importFrom(snowfall, sfInit, sfExport, sfStop)
