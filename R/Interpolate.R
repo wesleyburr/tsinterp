@@ -9,7 +9,7 @@
 #
 ################################################################################
 interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1) {
-  sfInit(parallel = TRUE, cpus = 4)
+  sfInit(parallel = TRUE, cpus = 2)
   
   stopifnot(is.numeric(delT), delT > 0, 
             is.numeric(sigClip), sigClip > 0, sigClip <= 1.0,
