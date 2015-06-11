@@ -9,7 +9,7 @@
 #
 ################################################################################
 interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1) {
- 
+  sfInit(parallel = TRUE, cpus = 4)
   
   stopifnot(is.numeric(delT), delT > 0, 
             is.numeric(sigClip), sigClip > 0, sigClip <= 1.0,
@@ -159,6 +159,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
     }
     zA[[p]] <- z1
   }
+  sfStop()
 
   if(cnv) {
     return(list(zF, p, diffC, zA, converge=TRUE))
@@ -240,6 +241,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   # setup ACV
   spec <- spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, deltat=delT)
   acv <- SpecToACV(spec,maxlag=N)
+
 
   for(n in 1:length(blocks[, 1])) { # loop on the blocks
     for(m in blocks[n, 1]:blocks[n, 2]) {

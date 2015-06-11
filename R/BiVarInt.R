@@ -1,7 +1,7 @@
 BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, delT=1) {
 
   cat("Iteration 0:  N/A  (")
-
+  sfInit(parallel = TRUE, cpus = 2)
   ########################################################################
   #
   #  Series z1 setup
@@ -211,7 +211,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
     }
     zA[[p]] <- z1
   }
-
+  sfStop()
   if(cnv) {
     return(list(zF, p, diffC, zA, converge=TRUE))
   } else {
@@ -431,7 +431,6 @@ mwXSwiener <- function(xd1, xd2, ok1, ok2, R11, R12, R21, R22) {
   }
   yd1
 }
-
 
 
 

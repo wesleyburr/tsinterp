@@ -34,14 +34,13 @@
   #  ** wants lots of 'good' data to its left
 
   # Can be done in parallel ? 
-  cat("Len blocks ", length(blocks[, 1]), "\n")
-  cat("Dim yd1 " , dim(yd1), "\n")
-  sfInit(parallel = TRUE, cpus = 4)
+  #cat("Len blocks ", length(blocks[, 1]), "\n")
+  #cat("Dim yd1 " , dim(yd1), "\n")
   sfExport("blocks", "neh", "xd1", "xd2", "ok1", "ok2", "R11",
            "R12", "R21", "R22", "clipMax")
   interval <- 1:length(blocks[, 1])
   res <- (sfLapply(interval, funcParallel2))
-  sfStop()
+  sfRemoveAll()
   for(m in interval) {
     yd1[blocks[m, 1]:blocks[m, 2]] <- res[[m]] 
   }
@@ -156,11 +155,10 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
   
       freqFinal <- matrix(data=0, nrow=length(floc), ncol=1)
       
-      sfInit(parallel = TRUE, cpus = 2)
       sfExport("progress", "pilot", "floc", "max7", "max5", "max3", "max2", "dT",
-               "x", "dFI", "epsilon", "freqFinal")
+               "x", "dFI", "epsilon")
       freqFinal <- unlist(sfLapply(1:length(floc), funcParallel1))
-      sfStop();
+      sfRemoveAll()
       
       if(progress) {
         cat("\n")
@@ -186,13 +184,18 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
     N <- length(x)
     t <- seq(1, N*dT, dT)
 
+    sfExport("dT", "sigClip", "freqFinal", "x")
+    remPeriod <- (sfLapply(1:length(floc), funcAny))
+    sfRemoveAll()
+    
     for(j in 1:length(floc)) {
-      sinusoids[, j] <- removePeriod(x, freqFinal[j], nw=5, k=8, deltaT=dT, warn=FALSE, prec=1e-10, sigClip=sigClip) 
+      sinusoids[, j] <- remPeriod[[j]] 
+    
       fit <- lm(sinusoids[, j] ~ sin(2*pi*freqFinal[j]*t) + cos(2*pi*freqFinal[j]*t) - 1)
       phse[j] <- atan(fit$coef[2] / fit$coef[1])
       amp[j] <- fit$coef[1] / cos(phse[j])
     }
-
+    
     attr(sinusoids, "Phase") <- phse
     attr(sinusoids, "Amplitude") <- amp
     attr(sinusoids, "Frequency") <- freqFinal
@@ -204,6 +207,10 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
     attr(sinusoids, "Frequency") <- 0
     return(sinusoids)
   }
+}
+
+funcAny <- function(j) {
+  removePeriod(x, freqFinal[j], nw=5, k=8, deltaT=dT, warn=FALSE, prec=1e-10, sigClip=sigClip)
 }
 
 findPowers <- function(N,f0,Nyq,prec) {
