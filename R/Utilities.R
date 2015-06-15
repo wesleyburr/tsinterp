@@ -574,8 +574,3 @@ dpssap <- function(V, maxdeg) {
   attr(x, "MaxLag") <- maxlag
   x
 }
-
-
-
-
-
