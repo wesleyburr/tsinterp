@@ -8,14 +8,16 @@
 #  ** ADAPT SO PRECISION IS USER-CONTROLLED
 #
 ################################################################################
-interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1) {
-  sfInit(parallel = TRUE, cpus = 2)
+interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1, parallelMode = FALSE, ncores = 2) {
+  
   
   stopifnot(is.numeric(delT), delT > 0, 
             is.numeric(sigClip), sigClip > 0, sigClip <= 1.0,
             is.logical(progress),
             is.numeric(maxit), maxit > 0,
-            is.numeric(z))
+            is.numeric(z), ncores > 0)
+  
+  ifelse(parallelMode, sfInit(parallel = TRUE, cpus = ncores), sfInit(parallel = FALSE))
 
   cat("Iteration 0:  N/A  (")
   gapTrue <- rep(NA, length(z)) 
@@ -32,7 +34,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
   
   TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, dT=delT, nw=5, k=8,
-                      sigClip=sigClip, progress=progress)
+                      sigClip=sigClip, progress=progress, parallelMode = parallelMode)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
     TtP <- rowSums(TtTmp) 
@@ -47,7 +49,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
     cat(".")
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
     TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSave)
+                   sigClip=sigClip, progress=progress, freqIn=freqSave, parallelMode = parallelMode)
     freqRet <- attr(TtTmp, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
       TtJ <- rowSums(TtTmp) 
@@ -89,7 +91,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   acv <- SpecToACV(spec,maxlag=N)
   # loop on the blocks; NOT AS EFFICIENT?
   # cat(paste("ACV: ", acv[1:4], "\n", sep=""))
-
+  # can be done in parallel ?
   for(n in 1:length(blocks[, 1])) { # loop on the blocks
     for(m in blocks[n, 1]:blocks[n, 2]) {
       tag <- ( (blocks[n, 1] - neh):(blocks[n, 2]+neh) )
@@ -106,6 +108,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
       y[m] <- wts %*% y[m+tag]
     }
   }
+
   Wt0 <- y
 
   ########################################################################
@@ -129,7 +132,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   while(!converge) {
     cat(paste("Iteration ", p, ": ", sep=""))
     z1 <- .interpolate2(zI=z0, gap=gap, blocks=blocks, delT=delT, sigClip=sigClip,
-                       freqSave=freqSave, progress=progress)
+                       freqSave=freqSave, progress=progress, parallelMode = parallelMode)
     diffC <- max(abs(z1[[1]] - z0)) 
 
     if(diffC < 1e-3) {
@@ -159,7 +162,8 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
     }
     zA[[p]] <- z1
   }
-  sfStop()
+  
+  sfStop() # stop threads
 
   if(cnv) {
     return(list(zF, p, diffC, zA, converge=TRUE))
@@ -177,7 +181,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
 #   and that function is in iterative loop
 #
 ################################################################################
-.interpolate2 <- function(zI, gap, blocks, delT, sigClip, freqSave, progress) {
+.interpolate2 <- function(zI, gap, blocks, delT, sigClip, freqSave, progress, parallelMode) {
 
   # setup parameters
   gapTrue <- rep(NA, length(zI)) 
@@ -188,7 +192,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
 
   TtTmp <- estimateTt(x=zI-MtP, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSave)
+                   sigClip=sigClip, progress=progress, freqIn=freqSave, parallelMode = parallelMode)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
     TtP <- rowSums(TtTmp) 
@@ -200,7 +204,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   while(!converge) {
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
     TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSave)
+                   sigClip=sigClip, progress=progress, freqIn=freqSave, parallelMode = parallelMode)
     freqRet <- attr(TtTmp, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
       TtJ <- rowSums(TtTmp) 

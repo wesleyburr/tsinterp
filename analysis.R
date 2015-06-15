@@ -1,14 +1,13 @@
-summaryRprof(filename = "1-estimateMT.out")
 
-runInterExample <- function() {
+runInterExample <- function(...) {
   data("flux")
   z1 <- flux$SagOrig
   z1[which(flux$S == FALSE)] <- NA
   # Unfortunately, not fast enough to run for CRAN checks
-  sagInt <- interpolate(z = z1, gap = which(flux$S == FALSE), maxit = 3, delT = 86400)
+  sagInt <- interpolate(z = z1, gap = which(flux$S == FALSE), maxit = 3, delT = 86400, ...)
 }
 
-runBiVarExampe <- function() {
+runBiVarExample <- function(...) {
   data("flux")
   
   z1 <- flux$SagOrig
@@ -17,7 +16,7 @@ runBiVarExampe <- function() {
   
   # Unfortunately, not fast enough to run for CRAN checks
    sagInt <- BiVarInt(z1 = z1, z2 = z2, gap1 = which(flux$S == FALSE), 
-                      gap2 = NULL, maxit = 3, delT = 86400)
+                      gap2 = NULL, maxit = 3, delT = 86400, ...)
   
 }
 
