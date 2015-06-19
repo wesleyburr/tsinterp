@@ -128,24 +128,24 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
     #    by inverting the spectrum (i.e. line component removal)
     lenFlocInterval <- 1:length(floc)
     if(length(floc) > 1 | floc[1] > 0) {
-    sinusoids <- matrix(data=0, nrow=length(x), ncol=length(floc))
+    dumpVec <- rep(0, length(floc))
+    sinusoids <- matrix(data=dumpVec, nrow=length(x), ncol=length(floc))
     dumpMatrix <- matrix(data=0, nrow=length(floc), ncol=1)
     amp <- dumpMatrix
     phse <- dumpMatrix
     N <- length(x)
-    t <- seq(1, N*dT, dT)
+    tseq <- seq(1, N*dT, dT)
 
-    sfExport("dT", "sigClip", "freqFinal", "x")
+    sfExport("dT", "sigClip", "freqFinal", "x", "tseq")
     remPeriod <- (sfLapply(lenFlocInterval, funcParallel3))
-   
     
     for(j in lenFlocInterval) {
-      sinusoids[, j] <- remPeriod[[j]] 
-      # It is not worth to fit the lienear models in parallel 
-      fit <- lm(sinusoids[, j] ~ sin(2*pi*freqFinal[j]*t) + cos(2*pi*freqFinal[j]*t) - 1)
-      phse[j] <- atan(fit$coef[2] / fit$coef[1])
-      amp[j] <- fit$coef[1] / cos(phse[j])
+      sinusoids[, j] <- remPeriod[[j]]$sinusoid
+      phse[j] <- remPeriod[[j]]$phse
+      amp[j] <- remPeriod[[j]]$amp
     }
+    
+
     if(parallelMode) sfRemoveAll()
     attr(sinusoids, "Phase") <- phse
     attr(sinusoids, "Amplitude") <- amp
@@ -318,8 +318,7 @@ dpssap <- function(V, maxdeg) {
     tmpVec <- rep(0, P)
     R <- matrix(data=tmpVec, nrow=N, ncol=P)
     U <- matrix(data=tmpVec, nrow=K, ncol=P)
-    #cat("DIM R is ", dim(R), "\n")
-    #cat("Dim U is ", dim(U), "\n")
+
     # Setup centered time index
     midTime <- (1+N) / 2
     scl <- 2/(N-1)
@@ -579,6 +578,12 @@ funcParallel2 <- function(m) {
 
 
 funcParallel3 <- function(j) {
-  removePeriod(x, freqFinal[j], nw=5, k=8, deltaT=dT, warn=FALSE, prec=1e-10, sigClip=sigClip)
+  res = {}
+  res$sinusoid <- removePeriod(x, freqFinal[j], nw=5, k=8, deltaT=dT, warn=FALSE, prec=1e-10, sigClip=sigClip)
+  fit <-  lm(res$sinusoid ~ sin(2*pi*freqFinal[j]*tseq) + cos(2*pi*freqFinal[j]*tseq) - 1)
+  res$phse <- atan(fit$coef[2] / fit$coef[1])
+  res$amp <- fit$coef[1] / cos(res$phse[j])
+  
+  res
 }
 
