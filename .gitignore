@@ -1,6 +1,5 @@
 
 *.pper
-
 .Rhistory
 .Rproj.user
 
@@ -12,3 +11,5 @@
 *.o
 
 *.out
+
+
