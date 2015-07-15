@@ -35,10 +35,16 @@
 
   #cat("Len blocks ", length(blocks[, 1]), "\n")
   #cat("Dim yd1 " , dim(yd1), "\n")
+  interval <- 1:length(blocks[, 1])
+  
   sfExport("blocks", "neh", "xd1", "xd2", "ok1", "ok2", "R11",
            "R12", "R21", "R22", "clipMax")
-  interval <- 1:length(blocks[, 1])
-  res <- (sfLapply(interval, funcParallel2))
+  # snow package Lapply crashs if it has only one element
+  if(length(interval) > 1) {
+    res <- (sfLapply(interval, funcParallel2))
+  } else {
+    res <- (sfClusterApplyLB(interval, funcParallel2))
+  }
   if(parallelMode) sfRemoveAll()
   
   for(m in interval) {
@@ -106,7 +112,11 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
       
       sfExport("progress", "pilot", "floc", "max7", "max5", "max3", "max2", "dT",
                "x", "dFI", "epsilon")
-      freqFinal <- unlist(sfLapply(1:length(floc), funcParallel1))
+      if(length(floc) > 1) {
+        freqFinal <- unlist(sfLapply(1:length(floc),  funcParallel1))
+      } else {
+        freqFinal <- unlist(sfClusterApply(1:length(floc), funcParallel1))
+      }
       if(parallelMode) sfRemoveAll()
       
       if(progress) {
@@ -126,7 +136,7 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
     ################################################################################
     # Algorithm step 4: frequencies obtained, estimate phase and amplitude
     #    by inverting the spectrum (i.e. line component removal)
-    lenFlocInterval <- 1:length(floc)
+   
     if(length(floc) > 1 | floc[1] > 0) {
     dumpVec <- rep(0, length(floc))
     sinusoids <- matrix(data=dumpVec, nrow=length(x), ncol=length(floc))
@@ -135,9 +145,14 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
     phse <- dumpMatrix
     N <- length(x)
     tseq <- seq(1, N*dT, dT)
-
+    lenFlocInterval <- 1:length(floc)
+    #print(lenFlocInterval)
     sfExport("dT", "sigClip", "freqFinal", "x", "tseq")
-    remPeriod <- (sfLapply(lenFlocInterval, funcParallel3))
+    if(lenFlocInterval > 1) {
+      remPeriod <- sfLapply(lenFlocInterval, funcParallel3)
+    } else {
+      remPeriod <- sfClusterApplyLB(lenFlocInterval, funcParallel3)
+    }
     
     for(j in lenFlocInterval) {
       sinusoids[, j] <- remPeriod[[j]]$sinusoid

@@ -16,13 +16,14 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
             is.logical(progress),
             is.numeric(maxit), maxit > 0,
             is.numeric(z), ncores > 0)
-  
-  ifelse(parallelMode, sfInit(parallel = TRUE, cpus = ncores), sfInit(parallel = FALSE))
-
+  options(warn = - 1)
+  ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores), sfInit(parallel = FALSE))
   cat("Iteration 0:  N/A  (")
   gapTrue <- rep(NA, length(z)) 
   gapTrue[-gap] <- TRUE
   blocks <- findBlocks(gapTrue)
+  #print(dim(blocks))
+
 
   # linearly interpolated; starting point
   z0 <- z

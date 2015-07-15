@@ -49,3 +49,6 @@ checkBiVar <- function(...) {
   
   sagInt
 }
+
+
+
