@@ -58,11 +58,7 @@ checkTwoLoopCleanup <- function(...) {
   z1[which(flux$S == FALSE)] <- NA
   
   # Unfortunately, not fast enough to run for CRAN checks
-  load("../originalInter/originalTwoLoop.Rdata")
+  sagInt <- twoLoopCleanup(z1, blkL = 100, ...)
   
-  a <- twoLoopCleanup(z1, blkL = 100, ...)
-  print(ifelse(all.equal(sagInt, a), "Result is ok", "result is wrong"))
-  
-  a
 }
 
