@@ -17,7 +17,15 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
             is.numeric(maxit), maxit > 0,
             is.numeric(z), ncores > 0)
   options(warn = - 1)
-  ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores), sfInit(parallel = FALSE))
+  
+  # Check if there is a previous snowfall cluster
+  # if it is true it will not create a new cluster
+  # it is done because of twoLoopCleanup
+  prevCluster <- sfIsRunning() 
+  
+  if(!prevCluster) {    
+    ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores), sfInit(parallel = FALSE))
+  }
   cat("Iteration 0:  N/A  (")
   gapTrue <- rep(NA, length(z)) 
   gapTrue[-gap] <- TRUE
@@ -164,7 +172,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
     zA[[p]] <- z1
   }
   
-  sfStop() # stop threads
+  if(!prevCluster) sfStop()
 
   if(cnv) {
     return(list(zF, p, diffC, zA, converge=TRUE))

@@ -24,6 +24,7 @@ twoLoopCleanup <- function(x, blkL = 100, parallelMode = TRUE, ncores = 2 ) {
     stopifnot(is.numeric(x), length(x) >= blkL, is.numeric(blkL), blkL != 0)
    # if(blkL < length(x) / 20) { warning("[twoLoopCleanup] blkL is very small: consider increasing it. ") }
   #  if(blkL > length(x) / 5) { warning("[twoLoopCleanup] blkL is very large: consider decreasing it. ") }
+    ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores), sfInit(parallel = FALSE))
   
     # Nothing to interpolate!
     if(length(which(is.na(x))) == 0) { return(x); }
@@ -42,7 +43,7 @@ twoLoopCleanup <- function(x, blkL = 100, parallelMode = TRUE, ncores = 2 ) {
       if(length(gap) > 0) {
         if(length(gap) < blkL/5 & min(gap) > 15 & max(gap) < (blkL-15)) {
           cat("Interpolating: ")
-          y <- interpolate(z, gap, maxit=20, progress=FALSE, sigClip=0.99, parallelMode = FALSE, ncores = ncores)
+          y <- interpolate(z, gap, maxit=20, progress=FALSE, sigClip=0.99, parallelMode = parallelMode, ncores = ncores)
           z1[rng] <- y[[1]]
           ok[rng] <- rep(TRUE, blkL)
         }

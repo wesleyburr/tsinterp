@@ -3,7 +3,15 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   
   stopifnot(ncores > 0)
   
-  ifelse(parallelMode, sfInit(parallel = TRUE, cpus = ncores), sfInit(parallel = FALSE))
+  
+  # Check if there is a previous snowfall cluster
+  # if it is true it will not create a new cluster
+  # it is done because of twoLoopCleanup
+  prevCluster <- sfIsRunning()
+  if(!prevCluster) {    
+    ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores), sfInit(parallel = FALSE))
+  }
+  
   cat("Iteration 0:  N/A  (")
 
   ########################################################################
@@ -216,7 +224,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
     zA[[p]] <- z1
   }
   
-  sfStop()
+  if(!prevCluster) sfStop()
   
   if(cnv) {
     return(list(zF, p, diffC, zA, converge=TRUE))

@@ -43,9 +43,9 @@
   if(length(interval) > 1) {
     res <- (sfLapply(interval, funcParallel2))
   } else {
-    res <- (sfClusterApplyLB(interval, funcParallel2))
+    res <- (sfClusterApply(interval, funcParallel2))
   }
-  if(parallelMode) sfRemoveAll()
+  #if(parallelMode) sfRemoveAll()
   
   for(m in interval) {
     yd1[blocks[m, 1]:blocks[m, 2]] <- res[[m]] 
@@ -117,7 +117,7 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
       } else {
         freqFinal <- unlist(sfClusterApply(1:length(floc), funcParallel1))
       }
-      if(parallelMode) sfRemoveAll()
+     # if(parallelMode) sfRemoveAll()
       
       if(progress) {
         cat("\n")
@@ -148,10 +148,10 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
     lenFlocInterval <- 1:length(floc)
     #print(lenFlocInterval)
     sfExport("dT", "sigClip", "freqFinal", "x", "tseq")
-    if(lenFlocInterval > 1) {
+    if(length(floc) > 1) {
       remPeriod <- sfLapply(lenFlocInterval, funcParallel3)
     } else {
-      remPeriod <- sfClusterApplyLB(lenFlocInterval, funcParallel3)
+      remPeriod <- sfClusterApply(lenFlocInterval, funcParallel3)
     }
     
     for(j in lenFlocInterval) {
@@ -161,7 +161,7 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
     }
     
 
-    if(parallelMode) sfRemoveAll()
+    #if(parallelMode) sfRemoveAll()
     attr(sinusoids, "Phase") <- phse
     attr(sinusoids, "Amplitude") <- amp
     attr(sinusoids, "Frequency") <- freqFinal
