@@ -18,7 +18,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
             is.numeric(z), ncores > 0)
   options(warn = - 1)
   
-  # Check if there is a previous snowfall cluster
+  # Check if there is a snowfall cluster running
   # if it is true it will not create a new cluster
   # it is done because of twoLoopCleanup
   prevCluster <- sfIsRunning() 
@@ -30,8 +30,6 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   gapTrue <- rep(NA, length(z)) 
   gapTrue[-gap] <- TRUE
   blocks <- findBlocks(gapTrue)
-  #print(dim(blocks))
-
 
   # linearly interpolated; starting point
   z0 <- z
@@ -253,7 +251,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
 
   # setup ACV
   spec <- spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, deltat=delT)
-  acv <- SpecToACV(spec,maxlag=N)
+  acv <- SpecToACV(spec, maxlag=N)
 
 
   for(n in 1:length(blocks[, 1])) { # loop on the blocks

@@ -51,4 +51,14 @@ checkBiVar <- function(...) {
 }
 
 
+checkTwoLoopCleanup <- function(...) {
+  data("flux")
+  
+  z1 <- flux$SagOrig
+  z1[which(flux$S == FALSE)] <- NA
+  
+  # Unfortunately, not fast enough to run for CRAN checks
+  sagInt <- twoLoopCleanup(z1, blkL = 100, ...)
+  
+}
 
