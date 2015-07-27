@@ -26,7 +26,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   if(!prevCluster) {    
     ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores), sfInit(parallel = FALSE))
   }
-  cat("Iteration 0:  N/A  (")
+  if(progress) cat("Iteration 0:  N/A  (")
   gapTrue <- rep(NA, length(z)) 
   gapTrue[-gap] <- TRUE
   blocks <- findBlocks(gapTrue)
@@ -53,7 +53,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
 
   converge <- FALSE
   while(!converge) {
-    cat(".")
+    if(progress) cat(".")
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
     TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSave, parallelMode = parallelMode)
@@ -77,7 +77,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
       TtP <- TtJ
     }
   } # internal M_t / T_t loop
-  cat(") \n")
+  if(progress) cat(") \n")
 
   # have initial M_t and T_t estimates
   Mt0 <- MtF
@@ -137,28 +137,28 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   diffP <- 1e20
 
   while(!converge) {
-    cat(paste("Iteration ", p, ": ", sep=""))
+    if(progress) cat(paste("Iteration ", p, ": ", sep=""))
     z1 <- .interpolate2(zI=z0, gap=gap, blocks=blocks, delT=delT, sigClip=sigClip,
                        freqSave=freqSave, progress=progress, parallelMode = parallelMode)
     diffC <- max(abs(z1[[1]] - z0)) 
 
     if(diffC < 1e-3) {
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       converge <- TRUE
       zF <- z1[[1]]
     } else if (abs(diffC - diffP) < 1e-5) {
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       converge <- TRUE
       zF <- 0.5 * (z1[[1]] + zA[[p]][[1]])
     } else if(diffC - diffP > 0.1*diffP) {  # this is the case where the diffs are diverging ...
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       converge <- TRUE 
       cnv <- FALSE
       zF <- z0           # in this case, the current interpolation is 'worse' than the 
                          # previous one, we assume ... so return the previous
     } else {
       diffP <- diffC
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       p <- p+1
       if(p > maxit) {
         converge <- TRUE

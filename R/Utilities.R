@@ -51,7 +51,7 @@
     yd1[blocks[m, 1]:blocks[m, 2]] <- res[[m]] 
   }
   
-  cat("Done \n")
+  if(progress) cat("Done \n")
   # cat("\n")
   yd1
 }
@@ -90,7 +90,7 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
         if(!is.null(bad)) {
           if(progress) {
               for(j in 1:length(bad)) {
-                cat(paste("Peak at ", formatC(pilot$freq[floc[bad[j]]], width=6, format="f"),
+                if(progress) cat(paste("Peak at ", formatC(pilot$freq[floc[bad[j]]], width=6, format="f"),
                     "Hz is smeared across more than 1 bin. \n", sep=""))
               } 
           }
@@ -538,9 +538,7 @@ dpssap <- function(V, maxdeg) {
 }
 
 
-#### Function that are executed in parallel
-
-
+#### Functions that are executed in parallel
 funcParallel1 <- function(j) {
   if(progress) {
     cat(".")  
@@ -580,8 +578,6 @@ funcParallel1 <- function(j) {
         }}}}
   fF
 }
-
-
 
 funcParallel2 <- function(m) {
   rng <- max(1, (blocks[m, 1] - neh)):(blocks[m, 2] + neh)

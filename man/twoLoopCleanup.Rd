@@ -5,11 +5,14 @@
     Univariate interpolation of gappy time series: implementation wrapping \link{interpolate} in some logic.
 }
 \usage{
-   twoLoopCleanup(x, blkL = 100)
+   twoLoopCleanup(x, blkL = 100, progress = FALSE, parallelMode = FALSE, ncores = 2)
 }
 \arguments{
    \item{x}{time series with gaps, denoted by \code{NA}.}
    \item{blkL}{length of block to use in first-pass interpolation; suggested as \code{length(x)/10}. }
+    \item{progress}{logical: should progress be written to screen as iterations proceed?}
+   \item{parallelMode}{logical: if TRUE it will use multicore processing where appliable, if FALSE it will use only sequencial computation}
+   \item{ncores}{integer: number of cores to be used if parallel is TRUE }
 }
 \details{
     This function wraps up calls to \code{interpolate}, another function in this package. Suitable for 

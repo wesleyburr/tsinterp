@@ -20,7 +20,7 @@
 #  a series with only a few missing points (e.g., less than 10%). 
 #
 ################################################################################
-twoLoopCleanup <- function(x, blkL = 100, parallelMode = FALSE, ncores = 2 ) {
+twoLoopCleanup <- function(x, blkL = 100, progress = FALSE, parallelMode = FALSE, ncores = 2 ) {
     stopifnot(is.numeric(x), length(x) >= blkL, is.numeric(blkL), blkL != 0)
    # if(blkL < length(x) / 20) { warning("[twoLoopCleanup] blkL is very small: consider increasing it. ") }
   #  if(blkL > length(x) / 5) { warning("[twoLoopCleanup] blkL is very large: consider decreasing it. ") }
@@ -28,7 +28,8 @@ twoLoopCleanup <- function(x, blkL = 100, parallelMode = FALSE, ncores = 2 ) {
     prevCluster <- sfIsRunning() 
    
     if(!prevCluster) {    
-      ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores), sfInit(parallel = FALSE))
+      ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores),
+                    sfInit(parallel = FALSE))
     }
   
     # Nothing to interpolate!
@@ -47,8 +48,9 @@ twoLoopCleanup <- function(x, blkL = 100, parallelMode = FALSE, ncores = 2 ) {
                                      # the available block
       if(length(gap) > 0) {
         if(length(gap) < blkL/5 & min(gap) > 15 & max(gap) < (blkL-15)) {
-          cat("Interpolating: ")
-          y <- interpolate(z, gap, maxit=20, progress=FALSE, sigClip=0.99, parallelMode = parallelMode, ncores = ncores)
+          if(progress) cat("Interpolating: ")
+          y <- interpolate(z, gap, maxit=20, progress=FALSE, sigClip=0.99,
+                           parallelMode = parallelMode, ncores = ncores)
           z1[rng] <- y[[1]]
           ok[rng] <- rep(TRUE, blkL)
         }
@@ -73,7 +75,8 @@ twoLoopCleanup <- function(x, blkL = 100, parallelMode = FALSE, ncores = 2 ) {
           gap <- gap[gap > minL & gap < maxL]
           gap <- gap - minL + 1
           z <- z2[minL:maxL]
-          y <- interpolate(z, gap, maxit=20, progress=FALSE, sigClip=0.99, parallelMode = parallelMode, ncores = ncores)
+          y <- interpolate(z, gap, maxit=20, progress=FALSE, sigClip=0.99,
+                           parallelMode = parallelMode, ncores = ncores)
           z2[minL:maxL] <- y[[1]]
           ok[minL:maxL] <- rep(TRUE, (maxL-minL+1))
 
@@ -95,7 +98,8 @@ twoLoopCleanup <- function(x, blkL = 100, parallelMode = FALSE, ncores = 2 ) {
         gap <- gap[gap > minL & gap < maxL]
         gap <- gap - minL + 1
         z <- z2[minL:maxL]
-        y <- interpolate(z, gap, maxit=20, progress=FALSE, sigClip=0.999, parallelMode = parallelMode, ncores = ncores)
+        y <- interpolate(z, gap, maxit=20, progress=FALSE, sigClip=0.999,
+                         parallelMode = parallelMode, ncores = ncores)
         z2[minL:maxL] <- y[[1]]
         ok[minL:maxL] <- rep(TRUE, (maxL-minL+1))
     }
@@ -120,9 +124,10 @@ twoLoopCleanup <- function(x, blkL = 100, parallelMode = FALSE, ncores = 2 ) {
     blks <- findBlocks(okNA)   # finds the gaps as start-end-length, so they 
     z3 <- z2                   # can be individually analyzed
 
-    cat("\nRe-interpolating properly: \n\n")
+    if(progress) cat("\nRe-interpolating properly: \n\n")
+  
     for(j in 1:length(blks[, 1])) {
-      cat(paste("Gap #", j, "\n", sep=""))
+      if(progress) cat(paste("Gap #", j, "\n", sep=""))
       neh <- max(blkL, 3*blks[j, 3])
       rng <- (blks[j, 1] - neh):(blks[j, 2] + neh)
       rng <- rng[rng > 0 & rng <= length(z2)]
@@ -132,7 +137,8 @@ twoLoopCleanup <- function(x, blkL = 100, parallelMode = FALSE, ncores = 2 ) {
       curOK[blks[j, 1]:blks[j, 2]] <- FALSE
       gap <- which(curOK[rng]==FALSE)
 
-      y <- interpolate(z=z2[rng], gap, maxit=20, progress=FALSE, sigClip=0.99,  parallelMode = parallelMode, ncores = ncores)
+      y <- interpolate(z=z2[rng], gap, maxit=20, progress=FALSE, sigClip=0.99,
+                       parallelMode = parallelMode, ncores = ncores)
       z3[rng] <- y[[1]]
     }
     if(!prevCluster) sfStop()
