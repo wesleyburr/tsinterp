@@ -9,10 +9,11 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   # it is done because of twoLoopCleanup
   prevCluster <- sfIsRunning()
   if(!prevCluster) {    
-    ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores), sfInit(parallel = FALSE))
+    ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores),
+                         sfInit(parallel = FALSE))
   }
   
-  cat("Iteration 0:  N/A  (")
+  if(progress) cat("Iteration 0:  N/A  (")
 
   ########################################################################
   #
@@ -45,7 +46,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
 
   converge <- FALSE
   while(!converge) {
-    cat(".")
+    if(progress) cat(".")
     MtJa <- estimateMt(x=zIa-TtPa, N=N, nw=5, k=8, pMax=2)
     TtTmpa <- estimateTt(x=zIa-MtJa, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSaveA, parallelMode = parallelMode)
@@ -69,7 +70,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
       TtPa <- TtJa
     }
   } # internal M_t / T_t loop
-  cat(") ")
+  if(progress) cat(") ")
 
   # have initial M_t and T_t estimates for Series 1
   Mt0a <- MtFa
@@ -111,10 +112,10 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   }
 
   freqSaveB <- attr(TtTmpb, "Frequency")
-  cat("(")
+  if(progress) cat("(")
   converge <- FALSE
   while(!converge) {
-    cat(".")
+    if(progress) cat(".")
     MtJb <- estimateMt(x=zIb-TtPb, N=N, nw=5, k=8, pMax=2)
     TtTmpb <- estimateTt(x=zIb-MtJb, epsilon=1e-6, dT=delT, nw=5, k=8, 
                    sigClip=sigClip, progress=progress, freqIn=freqSaveB, parallelMode = parallelMode)
@@ -138,7 +139,7 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
       TtPb <- TtJb
     }
   } # internal M_t / T_t loop
-  cat(") \n")
+  if(progress) cat(") \n")
 
   # have initial M_t and T_t estimates for Series 1
   Mt0b <- MtFb
@@ -189,29 +190,29 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   diffP <- 1e20
 
   while(!converge) {
-    cat(paste("Iteration ", p, ": ", sep=""))
+    if(progress) cat(paste("Iteration ", p, ": ", sep=""))
     z1 <- .BiVarInt2(zIa=z0a, zIb=z0b, gap1=gap1, gap2=gap2, blocks=blocksA, delT=delT, sigClip=sigClip,
                        freqSaveA=freqSaveA, freqSaveB=freqSaveB, progress=progress, parallelMode = parallelMode)
     # zIa=z0a; zIb=z0b; 
     diffC <- max(abs(z1[[1]] - z0a)) 
 
     if(diffC < 1e-3) {
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       converge <- TRUE
       zF <- z1[[1]]
     } else if (abs(diffC - diffP) < 1e-5) {
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       converge <- TRUE
       zF <- 0.5 * (z1[[1]] + zA[[p]][[1]])
     } else if(diffC - diffP > 0.2*diffP) {  # this is the case where the diffs are diverging ...
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       converge <- TRUE 
       cnv <- FALSE
       zF <- z0a          # in this case, the current interpolation is 'worse' than the 
                          # previous one, we assume ... so return the previous
     } else {
       diffP <- diffC
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       p <- p+1
       if(p > maxit) {
         converge <- TRUE
@@ -430,7 +431,7 @@ mwXSwiener <- function(xd1, xd2, ok1, ok2, R11, R12, R21, R22) {
 
   yd1 <- xd1
   yd2 <- xd2
-  # Can be done in parallel ?
+ 
   for(m in 1:n1) {
     if(is.na(ok1[m])) {
       idx1 <- m - tag1

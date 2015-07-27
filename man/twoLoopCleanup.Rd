@@ -5,7 +5,8 @@
     Univariate interpolation of gappy time series: implementation wrapping \link{interpolate} in some logic.
 }
 \usage{
-   twoLoopCleanup(x, blkL = 100, progress = FALSE, parallelMode = FALSE, ncores = 2)
+   twoLoopCleanup(x, blkL = 100, progress = FALSE,
+    parallelMode = FALSE, ncores = 2)
 }
 \arguments{
    \item{x}{time series with gaps, denoted by \code{NA}.}
