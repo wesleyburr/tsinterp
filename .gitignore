@@ -1,0 +1,17 @@
+
+*.pper
+.Rhistory
+.Rproj.user
+
+
+.Rbuildignore
+
+*.so
+
+*.o
+
+*.out
+
+
+
+.RData

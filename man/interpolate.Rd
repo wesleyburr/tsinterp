@@ -5,7 +5,8 @@
     Univariate interpolation of gappy time series. 
 }
 \usage{
-   interpolate(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1)
+   interpolate(z, gap, maxit = 20, progress=FALSE, sigClip=0.999,
+   delT=1, parallelMode = FALSE, ncores = 2)
 }
 \arguments{
    \item{z}{time series with gaps, denoted by \code{NA}.}
@@ -16,6 +17,8 @@
          into ``signal'' and ``noise'' (see algorithm for more). Suggested that this be kept
          above \code{0.95} at a minimum.}
    \item{delT}{the time step delta-t in seconds.}
+    \item{parallelMode}{logical: if TRUE it will use multicore processing where appliable, if FALSE it will use only sequencial computation}
+   \item{ncores}{integer: number of cores to be used if parallel is TRUE }
 }
 \details{
    This function implements the algorithm developed and explained in Chapter 3 of

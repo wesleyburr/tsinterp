@@ -9,7 +9,7 @@
 #    mwXSwiener.
 #
 #######################################################################
-"estimateWt" <- function(xd1, xd2, ok1, ok2, dT, blocks, neh, maxlag, clipMax) {
+"estimateWt" <- function(xd1, xd2, ok1, ok2, dT, blocks, neh, maxlag, clipMax, parallelMode = FALSE) {
 
   if(length(which(is.na(xd1))) > 0 | length(which(is.na(xd2))) > 0) {
       stop( "Series must be pre-interpolated before passing to WtEstimator." )
@@ -33,12 +33,25 @@
   #  ** if neh > blocks[m, 1] this will crash
   #  ** wants lots of 'good' data to its left
 
-  for(m in 1:length(blocks[, 1]))  {
-    rng <- max(1, (blocks[m, 1] - neh)):(blocks[m, 2] + neh)
-    fill <- mwXSwiener(xd1[rng], xd2[rng], ok1[rng], ok2[rng], R11, R12, R21, R22)
-    fill[which(abs(fill) > clipMax)] <- sign(fill[which(abs(fill) > clipMax)])*clipMax
-    yd1[blocks[m, 1]:blocks[m, 2]] <- fill[(neh+1):(neh+blocks[m, 3])]
+  #cat("Len blocks ", length(blocks[, 1]), "\n")
+  #cat("Dim yd1 " , dim(yd1), "\n")
+  interval <- 1:length(blocks[, 1])
+  
+  sfExport("blocks", "neh", "xd1", "xd2", "ok1", "ok2", "R11",
+           "R12", "R21", "R22", "clipMax")
+  # snow package Lapply crashs if it has only one element
+  if(length(interval) > 1) {
+    res <- (sfLapply(interval, funcParallel2))
+  } else {
+    res <- (sfClusterApply(interval, funcParallel2))
   }
+  #if(parallelMode) sfRemoveAll()
+  
+  for(m in interval) {
+    yd1[blocks[m, 1]:blocks[m, 2]] <- res[[m]] 
+  }
+  
+  if(progress) cat("Done \n")
   # cat("\n")
   yd1
 }
@@ -56,119 +69,99 @@ estimateMt <- function(x, N, nw, k, pMax) {
     return(phat)
 }
 
-estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NULL) {
+estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NULL, parallelMode = FALSE) {
 
+  if(is.null(freqIn)) {
+    
     ################################################################################
     # Algorithm step 1: spectrum/Ftest pilot estimate
     pilot <- spec.mtm(x, deltat=dT, nw=nw, k=k, Ftest=TRUE, plot=FALSE)
-
-  if(is.null(freqIn)) {
+    
     ################################################################################
     # Algorithm step 2: estimate significant peaks (sigClip)
     fmesh <- pilot$mtm$Ftest
     fsig <- fmesh > qf(sigClip, 2, pilot$mtm$k)
     floc <- which(fsig==TRUE)
-  if(length(floc > 0)) {
-    ###########################################################################   
-    delta <- floc[2:length(floc)] - floc[1:(length(floc)-1)]
-    if(length(which(delta==1)) > 0) {
-      bad <- which(delta==1)
-      if(!is.null(bad)) {
-        if(progress) {
-            for(j in 1:length(bad)) {
-              cat(paste("Peak at ", formatC(pilot$freq[floc[bad[j]]], width=6, format="f"),
-                  "Hz is smeared across more than 1 bin. \n", sep=""))
-            } 
+    if(length(floc > 0)) {
+      ###########################################################################   
+      delta <- floc[2:length(floc)] - floc[1:(length(floc)-1)]
+      if(length(which(delta==1)) > 0) {
+        bad <- which(delta==1)
+        if(!is.null(bad)) {
+          if(progress) {
+              for(j in 1:length(bad)) {
+                if(progress) cat(paste("Peak at ", formatC(pilot$freq[floc[bad[j]]], width=6, format="f"),
+                    "Hz is smeared across more than 1 bin. \n", sep=""))
+              } 
+          }
         }
+        floc <- floc[-bad] # eliminate the duplicates
       }
-      floc <- floc[-bad] # eliminate the duplicates
-    }
-
-    ################################################################################
-    # Algorithm step 3: estimate centers
-    dFI <- pilot$freq[2]
-    # epsilon <- 1e-10
-    maxFFT <- 1e20
-    max2 <- log(maxFFT, base=2)
-    max3 <- log(maxFFT, base=3)
-    max5 <- log(maxFFT, base=5)
-    max7 <- log(maxFFT, base=7)
-
-    freqFinal <- matrix(data=0, nrow=length(floc), ncol=1)
-
-    for(j in 1:length(floc)) {
+  
+      ################################################################################
+      # Algorithm step 3: estimate centers
+      dFI <- pilot$freq[2]
+      # epsilon <- 1e-10
+      maxFFT <- 1e20
+      max2 <- log(maxFFT, base=2)
+      max3 <- log(maxFFT, base=3)
+      max5 <- log(maxFFT, base=5)
+      max7 <- log(maxFFT, base=7)
+  
+      freqFinal <- matrix(data=0, nrow=length(floc), ncol=1)
+      
+      sfExport("progress", "pilot", "floc", "max7", "max5", "max3", "max2", "dT",
+               "x", "dFI", "epsilon")
+      if(length(floc) > 1) {
+        freqFinal <- unlist(sfLapply(1:length(floc),  funcParallel1))
+      } else {
+        freqFinal <- unlist(sfClusterApply(1:length(floc), funcParallel1))
+      }
+     # if(parallelMode) sfRemoveAll()
+      
       if(progress) {
-        cat(".")  
+        cat("\n")
       }
-      f0 <- pilot$freq[floc[j]]
-
-      if(progress) {
-          cat(paste("Optimizing Peak Near Frequency ", f0, "\n", sep=""))
-      }
-     
-      # increasing powers of 2,3,5,7 on nFFT until peak estimate converges
-      pwrOrig <- floor(log2(pilot$mtm$nFFT)) + 1
-      fI <- f0
-      converge <- FALSE
-
-      for(k7 in 0:max7) {
-      for(k5 in 0:max5) {
-      for(k3 in 0:max3) {
-      for(k2 in 1:max2) {
-
-        if(!converge) {
-            nFFT <- 2^pwrOrig * 2^k2 * 3^k3 * 5^k5 * 7^k7
-            tmpSpec <- spec.mtm(x, deltat=dT, nw=5, k=8, plot=FALSE, Ftest=TRUE,
-                                nFFT=nFFT)
-            dF <- tmpSpec$freq[2]
-            f0loc <- which(abs(tmpSpec$freq - f0) <= dF)
-            range <- which(tmpSpec$freq <= (f0+1.1*dFI) & tmpSpec$freq >= (f0-1.1*dFI))
-
-            fI2 <- tmpSpec$freq[which(tmpSpec$mtm$Ftest == max(tmpSpec$mtm$Ftest[range]))]
-            if(abs(fI - fI2) > epsilon) {
-              fI <- fI2
-            } else {
-              fF <- fI2
-              converge <- TRUE
-            }
-        }
-      }}}}
-      freqFinal[j] <- fF
-      if(progress) {
-          cat(paste("Final frequency estimate: ", fF, "\n", sep=""))
-      }
+    } else {
+      freqFinal <- NULL
+      floc <- -1
+    } # end of "there are freqs detected"
+  } else {  # case where frequencies are already obtained
+    freqFinal <- freqIn
+    floc <- 1:length(freqFinal)
+    if(length(freqFinal)==1 & freqFinal[1]==0) {
+      floc <- -1
     }
-    if(progress) {
-      cat("\n")
-    }
-  } else {
-    freqFinal <- NULL
-    floc <- -1
-  } # end of "there are freqs detected"
-} else {  # case where frequencies are already obtained
-  freqFinal <- freqIn
-  floc <- 1:length(freqFinal)
-  if(length(freqFinal)==1 & freqFinal[1]==0) {
-    floc <- -1
   }
-}
     ################################################################################
     # Algorithm step 4: frequencies obtained, estimate phase and amplitude
     #    by inverting the spectrum (i.e. line component removal)
+   
     if(length(floc) > 1 | floc[1] > 0) {
-    sinusoids <- matrix(data=0, nrow=length(x), ncol=length(floc))
-    amp <- matrix(data=0, nrow=length(floc), ncol=1)
-    phse <- matrix(data=0, nrow=length(floc), ncol=1)
+    dumpVec <- rep(0, length(floc))
+    sinusoids <- matrix(data=dumpVec, nrow=length(x), ncol=length(floc))
+    dumpMatrix <- matrix(data=0, nrow=length(floc), ncol=1)
+    amp <- dumpMatrix
+    phse <- dumpMatrix
     N <- length(x)
-    t <- seq(1, N*dT, dT)
-
-    for(j in 1:length(floc)) {
-      sinusoids[, j] <- removePeriod(x, freqFinal[j], nw=5, k=8, deltaT=dT, warn=FALSE, prec=1e-10, sigClip=sigClip) 
-      fit <- lm(sinusoids[, j] ~ sin(2*pi*freqFinal[j]*t) + cos(2*pi*freqFinal[j]*t) - 1)
-      phse[j] <- atan(fit$coef[2] / fit$coef[1])
-      amp[j] <- fit$coef[1] / cos(phse[j])
+    tseq <- seq(1, N*dT, dT)
+    lenFlocInterval <- 1:length(floc)
+    #print(lenFlocInterval)
+    sfExport("dT", "sigClip", "freqFinal", "x", "tseq")
+    if(length(floc) > 1) {
+      remPeriod <- sfLapply(lenFlocInterval, funcParallel3)
+    } else {
+      remPeriod <- sfClusterApply(lenFlocInterval, funcParallel3)
     }
+    
+    for(j in lenFlocInterval) {
+      sinusoids[, j] <- remPeriod[[j]]$sinusoid
+      phse[j] <- remPeriod[[j]]$phse
+      amp[j] <- remPeriod[[j]]$amp
+    }
+    
 
+    #if(parallelMode) sfRemoveAll()
     attr(sinusoids, "Phase") <- phse
     attr(sinusoids, "Amplitude") <- amp
     attr(sinusoids, "Frequency") <- freqFinal
@@ -287,10 +280,10 @@ removePeriod <- function(xd, f0, nw, k, deltaT, warn=FALSE, prec=1e-10, sigClip)
   } 
   est2 <- est
   for(j in 1:k) {
-    est2[which(range < spec$mtm$nfreqs),j] <- Conj(est2[which(range < spec$mtm$nfreqs),j])
+    select <- which(range < spec$mtm$nfreqs)
+    est2[select,j] <- Conj(est2[select,j])
     egn[range,j] <- egn[range,j] - est2[,j]
   }
-
   blank <- matrix(data=0,nrow=nFFT,ncol=1)
   blank[f0.idx] <- spec$mtm$cmv[f0.idx]
   blank[nFFT-f0.idx+2] <- Conj(spec$mtm$cmv[f0.idx])
@@ -337,9 +330,9 @@ dpssap <- function(V, maxdeg) {
     K <- length(V[1, ])
     P <- maxdeg + 1
     timeArr <- 1:N
-
-    R <- matrix(data=0, nrow=N, ncol=P)
-    U <- matrix(data=0, nrow=K, ncol=P)
+    tmpVec <- rep(0, P)
+    R <- matrix(data=tmpVec, nrow=N, ncol=P)
+    U <- matrix(data=tmpVec, nrow=K, ncol=P)
 
     # Setup centered time index
     midTime <- (1+N) / 2
@@ -420,7 +413,8 @@ dpssap <- function(V, maxdeg) {
       blocks <- matrix(data=0, nrow=1, ncol=3)
       blocks[1, 1:2] <- c(mask[1], mask[length(mask)])
     } else {
-      blocks <- matrix(data=0,nrow=length(mask),ncol=3)
+      tmpVec <- rep(0, 3)
+      blocks <- matrix(data=tmpVec,nrow=length(mask),ncol=3)
       blocks[1, 1] <- mask[1]
       blocks[1, 2] <- mask[diffs[1]]
       k <- 1
@@ -451,7 +445,7 @@ dpssap <- function(V, maxdeg) {
 #  Linear interpolator, requires data and blocks of missing points
 #
 ######################################################################
-"linInt" <- function(dat,blocks) {
+"linInt" <- function(dat, blocks) {
   nGap <- length(blocks[,1])
   for(j in 1:nGap) {
     dY <- (dat[blocks[j,2]+1] - dat[blocks[j,1]-1])/(blocks[j,3]+1)
@@ -465,6 +459,7 @@ dpssap <- function(V, maxdeg) {
     fill <- fill[c(-1,-length(fill))]
     dat[blocks[j,1]:blocks[j,2]] <- fill
   }
+  
   dat
 }
 
@@ -472,6 +467,7 @@ dpssap <- function(V, maxdeg) {
   s <- spec$spec
   dF <- spec$freq[2] 
   x <- matrix(data=0,nrow=(spec$mtm$nfreqs-1)*2,ncol=1)
+  #cat("dim X is ", dim(x), "/n");
   x[1:spec$mtm$nfreqs] = s*dF
   x[(spec$mtm$nfreqs+1):length(x)] <- x[(spec$mtm$nfreqs-1):2]
   x <- as.complex(x)
@@ -539,5 +535,66 @@ dpssap <- function(V, maxdeg) {
   attr(x, "ZeroF") <- maxlag+1
   attr(x, "MaxLag") <- maxlag
   x
+}
+
+
+#### Functions that are executed in parallel
+funcParallel1 <- function(j) {
+  if(progress) {
+    cat(".")  
+  }
+  f0 <- pilot$freq[floc[j]]
+  
+  if(progress) {
+    cat(paste("Optimizing Peak Near Frequency ", f0, "\n", sep=""))
+  }
+  
+  # increasing powers of 2,3,5,7 on nFFT until peak estimate converges
+  pwrOrig <- floor(log2(pilot$mtm$nFFT)) + 1
+  fI <- f0
+  converge <- FALSE
+  
+  for(k7 in 0:max7) {
+    for(k5 in 0:max5) {
+      for(k3 in 0:max3) {
+        for(k2 in 1:max2) {
+          
+          if(!converge) {
+            nFFT <- 2^pwrOrig * 2^k2 * 3^k3 * 5^k5 * 7^k7
+            tmpSpec <- spec.mtm(x, deltat=dT, nw=5, k=8, plot=FALSE, Ftest=TRUE,
+                                nFFT=nFFT)
+            dF <- tmpSpec$freq[2]
+            f0loc <- which(abs(tmpSpec$freq - f0) <= dF)
+            range <- which(tmpSpec$freq <= (f0+1.1*dFI) & tmpSpec$freq >= (f0-1.1*dFI))
+            
+            fI2 <- tmpSpec$freq[which(tmpSpec$mtm$Ftest == max(tmpSpec$mtm$Ftest[range]))]
+            if(abs(fI - fI2) > epsilon) {
+              fI <- fI2
+            } else {
+              fF <- fI2
+              converge <- TRUE
+            }
+          }
+        }}}}
+  fF
+}
+
+funcParallel2 <- function(m) {
+  rng <- max(1, (blocks[m, 1] - neh)):(blocks[m, 2] + neh)
+  fill <- mwXSwiener(xd1[rng], xd2[rng], ok1[rng], ok2[rng], R11, R12, R21, R22)
+  pos <- which(abs(fill) > clipMax)
+  fill[pos] <- sign(fill[pos])*clipMax
+  fill[(neh+1):(neh+blocks[m, 3])]
+}
+
+
+funcParallel3 <- function(j) {
+  res = {}
+  res$sinusoid <- removePeriod(x, freqFinal[j], nw=5, k=8, deltaT=dT, warn=FALSE, prec=1e-10, sigClip=sigClip)
+  fit <-  lm(res$sinusoid ~ sin(2*pi*freqFinal[j]*tseq) + cos(2*pi*freqFinal[j]*tseq) - 1)
+  res$phse <- atan(fit$coef[2] / fit$coef[1])
+  res$amp <- fit$coef[1] / cos(res$phse[j])
+  
+  res
 }
 

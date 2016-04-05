@@ -6,7 +6,8 @@
     as a baseline for the interpolation. 
 }
 \usage{
-   BiVarInt(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, delT=1)
+   BiVarInt(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999,
+   delT=1, parallelMode = FALSE, ncores = 2)
 }
 \arguments{
    \item{z1}{first time series (possibly) with gaps, denoted by \code{NA}.}
@@ -19,6 +20,8 @@
          into ``signal'' and ``noise'' (see algorithm for more). Suggested that this be kept
          above \code{0.95} at a minimum.}
    \item{delT}{the time step delta-t in seconds.}
+   \item{parallelMode}{logical: if TRUE it will use multicore processing where appliable, if FALSE it will use only sequencial computation}
+   \item{ncores}{integer: number of cores to be used if parallel is TRUE }
 }
 \details{
    This function implements the algorithm developed and explained in Chapter 4 of

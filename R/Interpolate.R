@@ -8,15 +8,25 @@
 #  ** ADAPT SO PRECISION IS USER-CONTROLLED
 #
 ################################################################################
-interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1) {
-
+interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1, parallelMode = FALSE, ncores = 2) {
+  
+  
   stopifnot(is.numeric(delT), delT > 0, 
             is.numeric(sigClip), sigClip > 0, sigClip <= 1.0,
             is.logical(progress),
             is.numeric(maxit), maxit > 0,
-            is.numeric(z))
-
-  cat("Iteration 0:  N/A  (")
+            is.numeric(z), ncores > 0)
+  options(warn = - 1)
+  
+  # Check if there is a snowfall cluster running
+  # if it is true it will not create a new cluster
+  # it is done because of twoLoopCleanup
+  prevCluster <- sfIsRunning() 
+  
+  if(!prevCluster) {    
+    ifelse(parallelMode, sfInit(parallel = parallelMode, cpus = ncores), sfInit(parallel = FALSE))
+  }
+  if(progress) cat("Iteration 0:  N/A  (")
   gapTrue <- rep(NA, length(z)) 
   gapTrue[-gap] <- TRUE
   blocks <- findBlocks(gapTrue)
@@ -27,12 +37,11 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
 
   # parameters
   N <- length(z)
-
   # estimate Mt0 and Tt0
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
-
+  
   TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, dT=delT, nw=5, k=8,
-                      sigClip=sigClip, progress=progress)
+                      sigClip=sigClip, progress=progress, parallelMode = parallelMode)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
     TtP <- rowSums(TtTmp) 
@@ -44,10 +53,10 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
 
   converge <- FALSE
   while(!converge) {
-    cat(".")
+    if(progress) cat(".")
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
     TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSave)
+                   sigClip=sigClip, progress=progress, freqIn=freqSave, parallelMode = parallelMode)
     freqRet <- attr(TtTmp, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
       TtJ <- rowSums(TtTmp) 
@@ -68,7 +77,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
       TtP <- TtJ
     }
   } # internal M_t / T_t loop
-  cat(") \n")
+  if(progress) cat(") \n")
 
   # have initial M_t and T_t estimates
   Mt0 <- MtF
@@ -89,7 +98,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   acv <- SpecToACV(spec,maxlag=N)
   # loop on the blocks; NOT AS EFFICIENT?
   # cat(paste("ACV: ", acv[1:4], "\n", sep=""))
-
+  # can be done in parallel ?
   for(n in 1:length(blocks[, 1])) { # loop on the blocks
     for(m in blocks[n, 1]:blocks[n, 2]) {
       tag <- ( (blocks[n, 1] - neh):(blocks[n, 2]+neh) )
@@ -106,6 +115,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
       y[m] <- wts %*% y[m+tag]
     }
   }
+
   Wt0 <- y
 
   ########################################################################
@@ -127,28 +137,28 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   diffP <- 1e20
 
   while(!converge) {
-    cat(paste("Iteration ", p, ": ", sep=""))
+    if(progress) cat(paste("Iteration ", p, ": ", sep=""))
     z1 <- .interpolate2(zI=z0, gap=gap, blocks=blocks, delT=delT, sigClip=sigClip,
-                       freqSave=freqSave, progress=progress)
+                       freqSave=freqSave, progress=progress, parallelMode = parallelMode)
     diffC <- max(abs(z1[[1]] - z0)) 
 
     if(diffC < 1e-3) {
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       converge <- TRUE
       zF <- z1[[1]]
     } else if (abs(diffC - diffP) < 1e-5) {
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       converge <- TRUE
       zF <- 0.5 * (z1[[1]] + zA[[p]][[1]])
     } else if(diffC - diffP > 0.1*diffP) {  # this is the case where the diffs are diverging ...
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       converge <- TRUE 
       cnv <- FALSE
       zF <- z0           # in this case, the current interpolation is 'worse' than the 
                          # previous one, we assume ... so return the previous
     } else {
       diffP <- diffC
-      cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
+      if(progress) cat(paste(formatC(diffC, width=6, digits=6, format='f'), "\n", sep=""))
       p <- p+1
       if(p > maxit) {
         converge <- TRUE
@@ -159,6 +169,8 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
     }
     zA[[p]] <- z1
   }
+  
+  if(!prevCluster) sfStop()
 
   if(cnv) {
     return(list(zF, p, diffC, zA, converge=TRUE))
@@ -176,7 +188,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
 #   and that function is in iterative loop
 #
 ################################################################################
-.interpolate2 <- function(zI, gap, blocks, delT, sigClip, freqSave, progress) {
+.interpolate2 <- function(zI, gap, blocks, delT, sigClip, freqSave, progress, parallelMode) {
 
   # setup parameters
   gapTrue <- rep(NA, length(zI)) 
@@ -187,7 +199,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
 
   TtTmp <- estimateTt(x=zI-MtP, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSave)
+                   sigClip=sigClip, progress=progress, freqIn=freqSave, parallelMode = parallelMode)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
     TtP <- rowSums(TtTmp) 
@@ -199,7 +211,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   while(!converge) {
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
     TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSave)
+                   sigClip=sigClip, progress=progress, freqIn=freqSave, parallelMode = parallelMode)
     freqRet <- attr(TtTmp, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
       TtJ <- rowSums(TtTmp) 
@@ -239,7 +251,8 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
 
   # setup ACV
   spec <- spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, deltat=delT)
-  acv <- SpecToACV(spec,maxlag=N)
+  acv <- SpecToACV(spec, maxlag=N)
+
 
   for(n in 1:length(blocks[, 1])) { # loop on the blocks
     for(m in blocks[n, 1]:blocks[n, 2]) {
