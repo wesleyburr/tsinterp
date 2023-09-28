@@ -2,7 +2,7 @@ Package: tsinterp
 Version: 0.2-1
 Title: Time Series Interpolation
 Author: Wesley Burr <wesley.burr@gmail.com>, with contributions from LINPACK
-Maintainer: Wesley Burr <wesley.burr@gmail.com>
+Maintainer: Wesley Burr <wesley.burr@gmail.com> and Roxana Niksefat <roxanans4@gmail.com>
 Depends: R (>= 2.15.1), multitaper (>= 1.0-7)
 Description: Interpolation routines for gapfilling approximately stationary time series.
 License: GPL (>= 2)
