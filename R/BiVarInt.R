@@ -1,5 +1,5 @@
-#' Title
-#'
+#' Title BiVarInt
+#' 
 #' @param z1 
 #' @param z2 
 #' @param gap1 
