@@ -8,10 +8,10 @@
 #' Details: Scans element-wise to find blocks of missing points
 #' 
 #' @examples library("tsinterp") 
-#' data("flux")
-#' miss <- flux$S 
-#' miss[miss == FALSE] <- NA
-#' blocks <- findBlocks(miss)
+#'           data("flux")
+#'           miss <- flux$S 
+#'           miss[miss == FALSE] <- NA
+#'           blocks <- findBlocks(miss)
 #' 
 
 "findBlocks" <- function(mask) {
