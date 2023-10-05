@@ -10,22 +10,20 @@
 ################################################################################
 #' interpolate
 #'
-#' @param z 
-#' @param gap 
-#' @param maxit 
-#' @param progress 
-#' @param sigClip 
+#' @param z { time series with gaps, denoted by \code{NA}. }
+#' @param gap { indexes of missing values, from \code{1:N}, where \code{N = length(z)}. }
+#' @param maxit { maximum number of iterations for convergence in interpolation.}
+#' @param progress { logical: should progress be written to screen as iterations proceed? }
+#' @param sigClip { probabilistic significance for choice of line components, dividing series
+#'    into ``signal'' and ``noise'' (see algorithm for more). Suggested that this be kept
+#'    above \code{0.95} at a minimum.}
 #' @param delT 
 #'
 #' @return
 #' @export
-#' Details:   This function implements the algorithm developed and explained in Chapter 3 of
-#' "Air Pollution and Health: Time Series Tools and Analysis". 
+#' Details:   Univariate interpolation of gappy time series. 
 #'
-#' @examples   library("tsinterp")
-#' data("flux")
-#' z1 <- flux$SagOrig
-#' z1[which(flux$S == FALSE)] <- NA
+#' @examples  interpolate(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1)
 #' 
 #' 
 interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1) {
