@@ -106,4 +106,3 @@ dpssap <- function(V, maxdeg) {
   return(list(U,R,Hn))
 }
 
-
