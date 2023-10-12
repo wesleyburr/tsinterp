@@ -5,6 +5,18 @@
 #    Computes cross-covariance sequence from two spectral objects
 #
 #######################################################################
+
+
+#' Title
+#'
+#' @param sp1 
+#' @param sp2 
+#' @param maxlag 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 "spec.mtm.cross" <- function(sp1, sp2, maxlag=NULL) {
   
   # make sure objects were returned "withInternals"

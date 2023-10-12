@@ -1,3 +1,18 @@
+#' Title
+#'
+#' @param x 
+#' @param epsilon 
+#' @param dT 
+#' @param nw 
+#' @param k 
+#' @param sigClip 
+#' @param progress 
+#' @param freqIn 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NULL) {
   
   ################################################################################
