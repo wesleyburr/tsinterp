@@ -1,3 +1,40 @@
+#' Discrete Prolate Spheroidal Sequence Associated Polynomials
+#'
+#' Generates the associated polynomials for a set of discrete prolate spheroidal
+#' sequences (dpss). Used for accurate estimation of polynomial trends.
+#'
+#' @param V a dpss (Slepian) sequence array, as computed by \code{dpss}.
+#' @param maxdeg maximum degree of associated polynomials to estimate and return.
+#'
+#' @details
+#' Computes the Discrete Prolate Spheroidal Sequences Associated 
+#' Polynomials for given \code{N} and given (pre-computed) matrix \code{V} 
+#' of dimension \code{N * K}, concentration \code{NW}. 
+#' Takes parameter \code{maxdeg} as maximum degree.
+#'
+#' Based on the algorithm developed by Thomson (2001). 
+#'
+#' @references
+#' Thomson, D.J (2001)
+#' Spectrum estimation and harmonic analysis. \emph{Proceedings of the IEEE}
+#' Volume \bold{70}, number 9, pp. 1055--1096.
+#'
+#' Thomson, D.J. (2001) Inverse Constrained Projection Filters. 
+#' \emph{Proc. SPIE 4478}, Wavelets: Applications in Signal and Image Processing IX, 172 
+#' (December 5, 2001); doi:10.1117/12.449708
+#'
+#' @return
+#' Returns a list of three elements, of which the second is the associated polynomials,
+#' stored as \code{N * (maxdeg + 1)}. 
+#'
+#' @examples
+#' library("tsinterp")
+#' 
+#' # compute associated polynomials for given dpss
+#' dw <- dpss(n = 100, k = 12, nw = 6)$v
+#' dwap <- dpssap(V = dw, maxdeg = 3)
+#'
+#' @export
 dpssap <- function(V, maxdeg) {
   
   # Sanity checks
@@ -68,3 +105,4 @@ dpssap <- function(V, maxdeg) {
   Hn <- colSums(R^2)
   return(list(U,R,Hn))
 }
+
