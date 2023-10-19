@@ -1,4 +1,4 @@
-#' @Title BiVarInt
+#' @title BiVarInt
 #' @param z1 first time series (possibly) with gaps, denoted by \code{NA}.
 #' @param z2 second time series (possibly) with gaps, denoted by \code{NA}.
 #' @param gap1 indexes of missing values from \code{z2}, from \code{1:N}, where \code{N = length(z2)}.
