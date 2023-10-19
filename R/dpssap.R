@@ -31,10 +31,12 @@
 #' library("tsinterp")
 #' 
 #' # compute associated polynomials for given dpss
-#' dw <- dpss(n = 100, k = 12, nw = 6)$v
+#' dw <- multitaper::dpss(n = 100, k = 12, nw = 6)$v
 #' dwap <- dpssap(V = dw, maxdeg = 3)
 #'
 #' @export
+#' 
+#' @importFrom multitaper dpss
 dpssap <- function(V, maxdeg) {
   
   # Sanity checks

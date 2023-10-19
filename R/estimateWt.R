@@ -12,7 +12,10 @@
 #' @param clipMax 
 #'
 #' @return
+#' 
 #' @export
+#' 
+#' @importFrom multitaper spec.mtm
 #'
 #' @examples
 "estimateWt" <- function(xd1, xd2, ok1, ok2, dT, blocks, neh, maxlag, clipMax) {
@@ -23,8 +26,8 @@
   # need the spectrum to be big enough to provide all the lags necessary ...
   nFFT <- 2^(floor(log2(3*maxlag))+2)
   
-  sp1 <- spec.mtm(xd1, deltat=dT, nFFT=nFFT, plot=FALSE, returnInternals=TRUE)
-  sp2 <- spec.mtm(xd2, deltat=dT, nFFT=nFFT, plot=FALSE, returnInternals=TRUE)
+  sp1 <- multitaper::spec.mtm(xd1, deltat=dT, nFFT=nFFT, plot=FALSE, returnInternals=TRUE)
+  sp2 <- multitaper::spec.mtm(xd2, deltat=dT, nFFT=nFFT, plot=FALSE, returnInternals=TRUE)
   R11 <- SpecToACVdual(sp1, maxlag=2*maxlag)
   R22 <- SpecToACVdual(sp2, maxlag=2*maxlag)
   R12 <- spec.mtm.cross(sp1, sp2, maxlag=2*maxlag)

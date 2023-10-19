@@ -10,7 +10,11 @@
 #' @param sigClip 
 #'
 #' @return inv
+#' 
 #' @export
+#' 
+#' @importFrom multitaper dpss
+#' @importFrom multitaper spec.mtm
 #'
 #' @examples
 #' 
@@ -18,7 +22,7 @@ removePeriod <- function(xd, f0, nw, k, deltaT, warn=FALSE, prec=1e-10, sigClip)
   
   # check to make sure f0 is reasonable, otherwise warn
   N <- length(xd)
-  spec.t <- spec.mtm(xd,nw=nw,k=k,Ftest=T,plot=F,nFFT=2^(floor(log(N,2))+2),deltat=deltaT)
+  spec.t <- multitaper::spec.mtm(xd,nw=nw,k=k,Ftest=T,plot=F,nFFT=2^(floor(log(N,2))+2),deltat=deltaT)
   idx <- max(which(spec.t$freq < f0))
   if( max(spec.t$mtm$Ftest[idx],spec.t$mtm$Ftest[idx]) < qf(sigClip,2,(2*k-2)) && warn ) {
     warning("Ftest at frequency f0 not significant. Are you sure you want to remove this?")
@@ -33,7 +37,7 @@ removePeriod <- function(xd, f0, nw, k, deltaT, warn=FALSE, prec=1e-10, sigClip)
     prec.st <- prec.st*10
   }
   
-  spec <- spec.mtm(xd,nw=nw,k=k,returnInternals=T,Ftest=T,plot=F,nFFT=nFFT,maxAdaptiveIterations=0,
+  spec <- multitaper::spec.mtm(xd,nw=nw,k=k,returnInternals=T,Ftest=T,plot=F,nFFT=nFFT,maxAdaptiveIterations=0,
                    deltat=deltaT)
   
   # parameter setup
@@ -48,7 +52,7 @@ removePeriod <- function(xd, f0, nw, k, deltaT, warn=FALSE, prec=1e-10, sigClip)
   # 
   ##########################################################################
   # form spectral windows
-  dw <- dpss(N,k,5.0)$v*sqrt(deltaT)
+  dw <- multitaper::dpss(N,k,5.0)$v*sqrt(deltaT)
   # zero-pad
   dw.z <- rbind(dw,matrix(data=0,nrow=(spec$mtm$nFFT-N),ncol=k))
   # empty window array, nFFT x k

@@ -7,13 +7,16 @@
 #' @param pMax parameter for fitting quadratic
 #'
 #' @return phat
+#'
 #' @export
+#' 
+#' @importFrom multitaper dpss
 #'
 #' @examples
 #' 
 #' 
 estimateMt <- function(x, N, nw, k, pMax) {
-  V <- dpss(n=N, nw=5, k=8)$v
+  V <- multitaper::dpss(n=N, nw=5, k=8)$v
   test <- dpssap(V,pMax) # fit quadratic
   U <- test[[1]]
   R <- test[[2]]

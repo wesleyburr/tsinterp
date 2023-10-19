@@ -1,11 +1,13 @@
-#' Name: findBlocks
-#' Title: Find blocks of missing points from a mask of a time series
+#' findBlocks
+
+#' Find blocks of missing points from a mask of a time series
+#' Scans element-wise to find blocks of missing points
 #' 
 #' @param mask 
 #' Usage: findBlocks(mask)
 #' @return a matrix of missing points as blocks, size \code{M * 3}. The start-point, end-point and length of each block are recorded row-wise
-#' @export
-#' Details: Scans element-wise to find blocks of missing points
+#' @export 
+#' 
 #' 
 #' @examples library("tsinterp") 
 #'           data("flux")
