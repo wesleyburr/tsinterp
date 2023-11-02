@@ -59,21 +59,19 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   N <- length(z)
   
   # estimate Mt0 and Tt0
-  gen_m_t(zI = zI, N = N, delT = delT, 
-          sigClip = sigClip, progress = progress)
+  genmt_1 <- gen_m_t(zI = zI, N = N, delT = delT, 
+                     sigClip = sigClip, progress = progress)
+  Ttp <- genmt_1[1]
+  freqSave <- genmt_1[2]
   
   converge <- FALSE
   while(!converge) {
     cat(".")
-    MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
-    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                        sigClip=sigClip, progress=progress, 
-                        freqIn=freqSave)
-    freqRet <- attr(TtTmp, "Frequency")
-    if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
-      TtJ <- rowSums(TtTmp) 
-    } else {
-      TtJ <- TtTmp
+    
+    genmt_2 <- gen_m_t(zI = zI-Ttp, N = N, delT = delT, 
+                       sigClip = sigClip, progress = progress)
+    
+    TtJ <- genmt_2[1]
     }
     
     max1 <- max(abs(MtJ - MtP))
@@ -220,27 +218,20 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   N <- length(zI)
   
   # estimate Mt0 and Tt0
-  MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
+  genmt_1 <- gen_m_t(zI = zI, N = N, delT = delT, 
+                     sigClip = sigClip, progress = progress)
   
-  TtTmp <- estimateTt(x=zI-MtP, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                      sigClip=sigClip, progress=progress, freqIn=freqSave)
-  freqRet <- attr(TtTmp, "Frequency")
-  if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
-    TtP <- rowSums(TtTmp) 
-  } else {
-    TtP <- TtTmp
-  }
+  Ttp <- genmt_1[1]
+  freqSave <- genmt_1[2]
   
   converge <- FALSE
   while(!converge) {
-    MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
-    TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                        sigClip=sigClip, progress=progress, freqIn=freqSave)
-    freqRet <- attr(TtTmp, "Frequency")
-    if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
-      TtJ <- rowSums(TtTmp) 
-    } else {
-      TtJ <- TtTmp
+    
+    
+    genmt_2 <- gen_m_t(zI = zI-Ttp, N = N, delT = delT, 
+                       sigClip = sigClip, progress = progress)
+    
+    TtJ <- genmt_2[1]
     }
     
     max1 <- max(abs(MtJ - MtP))

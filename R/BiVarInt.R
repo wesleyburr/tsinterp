@@ -49,30 +49,18 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   N <- length(z1)
 
   # estimate Mt0 and Tt0
-  MtPa <- estimateMt(x=zIa, N=N, nw=5, k=8, pMax=2)
-
-  TtTmpa <- estimateTt(x=zIa - MtPa, epsilon=1e-6, dT=delT, nw=5, k=8,
-                      sigClip=sigClip, progress=progress)
-  freqRet <- attr(TtTmpa, "Frequency")
-  if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
-    TtPa <- rowSums(TtTmpa) 
-  } else {
-    TtPa <- TtTmpa
-  }
-
-  freqSaveA <- attr(TtTmpa, "Frequency")
+  
+  genmt_1 <- gen_m_t(zI = zIa, N = N, delT = delT, 
+                     sigClip = sigClip, progress = progress)
+  TtPa <- genmt_1[1]
+  freqSaveA <- genmt_1[2]
 
   converge <- FALSE
   while(!converge) {
     cat(".")
-    MtJa <- estimateMt(x=zIa-TtPa, N=N, nw=5, k=8, pMax=2)
-    TtTmpa <- estimateTt(x=zIa-MtJa, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSaveA)
-    freqRet <- attr(TtTmpa, "Frequency")
-    if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
-      TtJa <- rowSums(TtTmpa) 
-    } else {
-      TtJa <- TtTmpa
+    genmt_2 <- gen_m_t(zI = zIa - TtPa, N = N, delT = delT, 
+                       sigClip = sigClip, progress = progress)
+    TtJa <- genmt_2[1]
     }
 
     max1 <- max(abs(MtJa - MtPa))
@@ -118,30 +106,18 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   N <- length(z2)
 
   # estimate Mt0 and Tt0
-  MtPb <- estimateMt(x=zIb, N=N, nw=5, k=8, pMax=2)
-
-  TtTmpb <- estimateTt(x=zIb - MtPb, epsilon=1e-6, dT=delT, nw=5, k=8,
-                      sigClip=sigClip, progress=progress)
-  freqRet <- attr(TtTmpb, "Frequency")
-  if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
-    TtPb <- rowSums(TtTmpb) 
-  } else {
-    TtPb <- TtTmpb
-  }
-
-  freqSaveB <- attr(TtTmpb, "Frequency")
+  genmt_3 <- gen_m_t(zI = zIb, N = N, delT = delT, 
+                     sigClip = sigClip, progress = progress)
+  TtPb <- genmt_3[1]
+  freqSaveB <- genmt_3[2]
+  
   cat("(")
   converge <- FALSE
-  while(!converge) {
+  while(!converge) 
     cat(".")
-    MtJb <- estimateMt(x=zIb-TtPb, N=N, nw=5, k=8, pMax=2)
-    TtTmpb <- estimateTt(x=zIb-MtJb, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSaveB)
-    freqRet <- attr(TtTmpb, "Frequency")
-    if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
-      TtJb <- rowSums(TtTmpb) 
-    } else {
-      TtJb <- TtTmpb
+    genmt_4 <- gen_m_t(zI = zIb - TtPb, N = N, delT = delT, 
+                     sigClip = sigClip, progress = progress)
+    TtJb <- genmt_4[1]
     }
 
     max1 <- max(abs(MtJb - MtPb))
@@ -266,27 +242,16 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   N <- length(zIa)
 
   # estimate Mt0 and Tt0
-  MtPa <- estimateMt(x=zIa, N=N, nw=5, k=8, pMax=2)
-
-  TtTmpa <- estimateTt(x=zIa-MtPa, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSaveA)
-  freqRet <- attr(TtTmpa, "Frequency")
-  if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
-    TtPa <- rowSums(TtTmpa)
-  } else {
-    TtPa <- TtTmpa
-  }
+  genmt_1 <- gen_m_t(zI = zIa, N = N, delT = delT, 
+                     sigClip = sigClip, progress = progress)
+  TtPa <- genmt_1[1]
+  freqSaveA <- genmt_1[2]
 
   converge <- FALSE
   while(!converge) {
-    MtJa <- estimateMt(x=zIa-TtPa, N=N, nw=5, k=8, pMax=2)
-    TtTmpa <- estimateTt(x=zIa-MtJa, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSaveA)
-    freqRet <- attr(TtTmpa, "Frequency")
-    if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
-      TtJa <- rowSums(TtTmpa) 
-    } else {
-      TtJa <- TtTmpa
+    genmt_2 <- gen_m_t(zI = zIa-TtPa, N = N, delT = delT, 
+                       sigClip = sigClip, progress = progress)
+    TtJa <- genmt_2[1]
     }
 
     max1 <- max(abs(MtJa - MtPa))
@@ -317,27 +282,16 @@ BiVarInt <- function(z1, z2, gap1, gap2, maxit, progress=FALSE, sigClip=0.999, d
   N <- length(zIb)
 
   # estimate Mt0 and Tt0
-  MtPb <- estimateMt(x=zIb, N=N, nw=5, k=8, pMax=2)
-
-  TtTmpb <- estimateTt(x=zIb-MtPb, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSaveB)
-  freqRet <- attr(TtTmpb, "Frequency")
-  if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
-    TtPb <- rowSums(TtTmpb)
-  } else {
-    TtPb <- TtTmpb
-  }
+  genmt_3 <- gen_m_t(zI = zIb, N = N, delT = delT, 
+                     sigClip = sigClip, progress = progress)
+  TtPb <- genmt_3[1]
+  freqSaveB <- genmt_3[2]
 
   converge <- FALSE
   while(!converge) {
-    MtJb <- estimateMt(x=zIb-TtPb, N=N, nw=5, k=8, pMax=2)
-    TtTmpb <- estimateTt(x=zIb-MtJb, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                   sigClip=sigClip, progress=progress, freqIn=freqSaveB)
-    freqRet <- attr(TtTmpb, "Frequency")
-    if(length(freqRet) > 1 | (length(freqRet)==1 & freqRet[1] != 0)) {
-      TtJb <- rowSums(TtTmpb) 
-    } else {
-      TtJb <- TtTmpb
+    genmt_4 <- gen_m_t(zI = zIb-TtPb, N = N, delT = delT, 
+                       sigClip = sigClip, progress = progress)
+    TtJb <- genmt_4[1]
     }
 
     max1 <- max(abs(MtJb - MtPb))
