@@ -298,4 +298,3 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   z1[gap] <- Mt0[gap] + Tt0[gap] + Wt0[gap]
   return(list(z1, Mt0, Tt0, Wt0))
 }
-
