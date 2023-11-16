@@ -10,6 +10,8 @@
 ################################################################################
 #' interpolate
 #'
+#' Univariate interpolation of gappy time series. 
+
 #' @param z time series with gaps, denoted by \code{NA}.
 #' @param gap indexes of missing values, from \code{1:N}, where \code{N = length(z)}.
 #' @param maxit maximum number of iterations for convergence in interpolation.
@@ -19,16 +21,18 @@
 #'    above \code{0.95} at a minimum.
 #' @param delT the time step delta-t in seconds.
 #'
-#' @return
+#' @return 
+#' 
 #' @export
-#' Details:   Univariate interpolation of gappy time series. 
+#' 
+#' @importFrom multitaper spec.mtm
 #'
 #' @examples  
 #'    library("tsinterp")
 #'    data("flux")
 #'    z1 <- flux$SagOrig
 #'    z1[which(flux$S == FALSE)] <- NA
-#' interpolate(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1)
+#'    interpolate(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1)
 #' 
 #' 
 #' 
@@ -55,25 +59,16 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   # parameters
   N <- length(z)
   # estimate Mt0 and Tt0
-  MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
-  
-  TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, dT=delT, nw=5, k=8,
-                      sigClip=sigClip, progress=progress)
-  freqRet <- attr(TtTmp, "Frequency")
-  if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
-    TtP <- rowSums(TtTmp) 
-  } else {
-    TtP <- TtTmp
-  }
-  
-  freqSave <- attr(TtTmp, "Frequency")
+  gen_m_t(zI = zI, N = N, delT = delT, 
+          sigClip = sigClip, progress = progress)
   
   converge <- FALSE
   while(!converge) {
     cat(".")
     MtJ <- estimateMt(x=zI-TtP, N=N, nw=5, k=8, pMax=2)
     TtTmp <- estimateTt(x=zI-MtJ, epsilon=1e-6, dT=delT, nw=5, k=8, 
-                        sigClip=sigClip, progress=progress, freqIn=freqSave)
+                        sigClip=sigClip, progress=progress, 
+                        freqIn=freqSave)
     freqRet <- attr(TtTmp, "Frequency")
     if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
       TtJ <- rowSums(TtTmp) 
@@ -111,7 +106,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   clipMax <- max(abs(max(zI2)), abs(min(zI2)))
   # cat(paste("ClipMax = ", clipMax, "\n", sep=""))
   # setup ACV
-  spec <- spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, deltat=delT)
+  spec <- multitaper::spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, deltat=delT)
   acv <- SpecToACV(spec,maxlag=N)
   # loop on the blocks; NOT AS EFFICIENT?
   # cat(paste("ACV: ", acv[1:4], "\n", sep=""))
@@ -216,7 +211,6 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
 #' @param progress 
 #'
 #' @return
-#' @export
 #'
 #' @examples
 .interpolate2 <- function(zI, gap, blocks, delT, sigClip, freqSave, progress) {
@@ -281,7 +275,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   y <- zI2
   
   # setup ACV
-  spec <- spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, deltat=delT)
+  spec <- multitaper::spec.mtm(zI2, nw=5.0, k=8, plot=FALSE, deltat=delT)
   acv <- SpecToACV(spec,maxlag=N)
 
   for(n in 1:length(blocks[, 1])) { # loop on the blocks

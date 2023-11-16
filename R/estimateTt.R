@@ -20,6 +20,9 @@
 #' 3. Refinement of peak locations by eliminating duplicates and optimizing peak frequencies.
 #' 4. Estimation of phase and amplitude by inverting the spectrum (line component removal).
 #'
+#' @export
+#' 
+#' @importFrom multitaper spec.mtm
 #' @examples
 #' estimateTt(x, epsilon = 1e-10, dT = 0.01, nw = 4, k = 5, sigClip = 0.05)
 #'
@@ -27,7 +30,7 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
   
   ################################################################################
   # Algorithm step 1: spectrum/Ftest pilot estimate
-  pilot <- spec.mtm(x, deltat=dT, nw=nw, k=k, Ftest=TRUE, plot=FALSE)
+  pilot <- multitaper::spec.mtm(x, deltat=dT, nw=nw, k=k, Ftest=TRUE, plot=FALSE)
   
   if(is.null(freqIn)) {
     ################################################################################
@@ -85,7 +88,7 @@ estimateTt <- function(x, epsilon, dT, nw, k, sigClip, progress=FALSE, freqIn=NU
                 
                 if(!converge) {
                   nFFT <- 2^pwrOrig * 2^k2 * 3^k3 * 5^k5 * 7^k7
-                  tmpSpec <- spec.mtm(x, deltat=dT, nw=5, k=8, plot=FALSE, Ftest=TRUE,
+                  tmpSpec <- multitaper::spec.mtm(x, deltat=dT, nw=5, k=8, plot=FALSE, Ftest=TRUE,
                                       nFFT=nFFT)
                   dF <- tmpSpec$freq[2]
                   f0loc <- which(abs(tmpSpec$freq - f0) <= dF)
