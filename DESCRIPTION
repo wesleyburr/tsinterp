@@ -7,4 +7,5 @@ Depends: R (>= 2.16), multitaper (>= 1.0-8), snowfall
 Depends: R (>= 2.15.1), multitaper (>= 1.0-7)
 Description: Interpolation routines for gapfilling approximately stationary time series.
 License: GPL (>= 2)
-Packaged: 2015-06-15 13:06:02 UTC; wburr
+Packaged: 2014-07-17 13:06:02 UTC; wburr
+RoxygenNote: 7.2.3
