@@ -8,11 +8,10 @@
 #  ** ADAPT SO PRECISION IS USER-CONTROLLED
 #
 ################################################################################
-
 #' interpolate
 #'
 #' Univariate interpolation of gappy time series. 
-
+#'
 #' @param z time series with gaps, denoted by \code{NA}.
 #' @param gap indexes of missing values, from \code{1:N}, where \code{N = length(z)}.
 #' @param maxit maximum number of iterations for convergence in interpolation.
@@ -39,7 +38,8 @@
 #' 
 #' 
 interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1) {
-  
+  #sfInit(parallel = TRUE, cpus = 2)
+
   stopifnot(is.numeric(delT), delT > 0, 
             is.numeric(sigClip), sigClip > 0, sigClip <= 1.0,
             is.logical(progress),
@@ -57,7 +57,7 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
   
   # parameters
   N <- length(z)
-  
+
   # estimate Mt0 and Tt0
   gen_m_t(zI = zI, N = N, delT = delT, 
           sigClip = sigClip, progress = progress)
@@ -180,7 +180,8 @@ interpolate <- function(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=
     }
     zA[[p]] <- z1
   }
-  
+  #sfStop()
+
   if(cnv) {
     return(list(zF, p, diffC, zA, converge=TRUE))
   } else {

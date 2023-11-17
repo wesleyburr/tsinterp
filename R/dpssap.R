@@ -107,4 +107,3 @@ dpssap <- function(V, maxdeg) {
   Hn <- colSums(R^2)
   return(list(U,R,Hn))
 }
-

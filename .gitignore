@@ -1,5 +1,9 @@
-.Rproj.user
 .Rhistory
+.Rproj.user
+.Rbuildignore
+*.so
+*.o
+*.out
 .RData
 .Ruserdata
 src/*.o
