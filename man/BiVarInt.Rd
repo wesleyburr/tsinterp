@@ -40,6 +40,14 @@ BiVarInt
 }
 \details{
 This function implements the algorithm developed and explained in Chapter 4 of
+
+Additional details...
+          A list of five elements, including an interpolated series:
+           zF the final interpolated series.
+           p the number of iterations.
+           diffC the difference between the final series and the previous iteration (metric for convergence).
+           zA a list of interim series, showing each stage of the convergence.
+           converge logical indicating whether convergence occurred.
 }
 \examples{
 library("tsinterp")
