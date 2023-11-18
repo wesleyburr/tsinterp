@@ -23,7 +23,7 @@
 gen_m_t <- function(zI, N, delT, sigClip, progress) {
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
   TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, dT=delT, nw=5, k=8,
-                      sigClip=0.05, progress=FALSE)
+                      sigClip= sigClip, progress=progress)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
     TtP <- rowSums(TtTmp) 
