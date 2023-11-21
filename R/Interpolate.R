@@ -21,18 +21,18 @@
 #'    above \code{0.95} at a minimum.
 #' @param delT the time step delta-t in seconds.
 #'
-#' @return 
+#' @return returns a list of the interpolated timeseries
 #' 
 #' @export
 #' 
 #' @importFrom multitaper spec.mtm
 #'
-#' @examples  
-#'    library("tsinterp")
-#'    data("flux")
-#'    z1 <- flux$SagOrig
-#'    z1[which(flux$S == FALSE)] <- NA
-#'    interpolate(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1)
+#'  
+#' @examples library("tsinterp")
+#'          data("flux")
+#'          z1 <- flux$SagOrig
+#'          z1[which(flux$S == FALSE)] <- NA
+#'          interpolate(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1)
 #' 
 #' 
 #' 

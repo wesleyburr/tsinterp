@@ -1,6 +1,6 @@
-#' gen_m_t
+#' @title gen_m_t is a used to generate mt for the interpolation function
 #' 
-#' A function that, given argument zI, computes a MtP/TtP
+#' @details A function that, given argument zI, computes a MtP/TtP
 #' pairing of estimates, which can then be used in the 
 #' maximum-likelihood iterative step of the EM algorithm
 #' for interpolation.
@@ -11,16 +11,19 @@
 #' @param sigClip   Significance level for periodic component detection.
 #' @param progress  Should a progress tick be printed or not?
 #'
-#' @return 
-#' TtP: the interpolated
-#' freqSave: vector of frequencies saved
+#' @return a class list that has Ttp and freqsave as objects
+#' 
+#' 
+#' 
+#' 
 #' @export
 #'
-#' @examples
+#' 
+#' 
 gen_m_t <- function(zI, N, delT, sigClip, progress) {
   MtP <- estimateMt(x=zI, N=N, nw=5, k=8, pMax=2)
   TtTmp <- estimateTt(x=zI - MtP, epsilon=1e-6, dT=delT, nw=5, k=8,
-                      sigClip=sigClip, progress=progress)
+                      sigClip= sigClip, progress=progress)
   freqRet <- attr(TtTmp, "Frequency")
   if(length(freqRet) > 1 | (length(freqRet)==1 && freqRet != 0)) {
     TtP <- rowSums(TtTmp) 
@@ -31,7 +34,7 @@ gen_m_t <- function(zI, N, delT, sigClip, progress) {
   # returns
   return(list(TtP = TtP,
               freqSave = freqSave
-             )
-        )
+  )
+  )
 } 
 
