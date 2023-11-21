@@ -21,7 +21,9 @@
 #'           # Unfortunately, not fast enough to run for CRAN checks
 #'           sagInt <- BiVarInt(z1 = z1, z2 = z2, gap1 = which(flux$S == FALSE), 
 #'                              gap2 = NULL, maxit = 3, delT = 86400)
-#' @value    A list of five elements, including an interpolated series:
+#'@details
+#'Additional details...
+#'           A list of five elements, including an interpolated series:
 #'            zF the final interpolated series.
 #'            p the number of iterations.
 #'            diffC the difference between the final series and the previous iteration (metric for convergence).

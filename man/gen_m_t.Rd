@@ -2,7 +2,7 @@
 % Please edit documentation in R/gen_m_t.R
 \name{gen_m_t}
 \alias{gen_m_t}
-\title{gen_m_t}
+\title{gen_m_t is a used to generate mt for the interpolation function}
 \usage{
 gen_m_t(zI, N, delT, sigClip, progress)
 }
@@ -18,10 +18,12 @@ gen_m_t(zI, N, delT, sigClip, progress)
 \item{progress}{Should a progress tick be printed or not?}
 }
 \value{
-TtP: the interpolated
-freqSave: vector of frequencies saved
+a class list that has Ttp and freqsave as objects
 }
 \description{
+gen_m_t is a used to generate mt for the interpolation function
+}
+\details{
 A function that, given argument zI, computes a MtP/TtP
 pairing of estimates, which can then be used in the 
 maximum-likelihood iterative step of the EM algorithm
