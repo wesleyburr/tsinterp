@@ -21,16 +21,18 @@ above \code{0.95} at a minimum.}
 
 \item{delT}{the time step delta-t in seconds.}
 }
+\value{
+returns a list of the interpolated timeseries
+}
 \description{
 Univariate interpolation of gappy time series.
 }
 \examples{
- 
-   library("tsinterp")
-   data("flux")
-   z1 <- flux$SagOrig
-   z1[which(flux$S == FALSE)] <- NA
-   interpolate(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1)
+library("tsinterp")
+         data("flux")
+         z1 <- flux$SagOrig
+         z1[which(flux$S == FALSE)] <- NA
+         interpolate(z, gap, maxit = 20, progress=FALSE, sigClip=0.999, delT=1)
 
 
 

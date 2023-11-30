@@ -12,6 +12,10 @@
  
 
 findPowers <- function(N,f0,Nyq,prec) {
+  if(N < 0){
+    stop("N must be greater than or equal to 0")
+  }
+  
   nFFT <- 1e30
   
   low2 <- 0
