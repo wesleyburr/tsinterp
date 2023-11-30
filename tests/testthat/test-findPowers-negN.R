@@ -1,5 +1,5 @@
-## Need to add code to findPowers for error (stopifnot), like putting in negative n value.
+## Fails, check error message 
 
 test_that("findPowers_test", { 
-  expect_error(findPower(-1,1,1,1), "Error")
+  expect_error(findPower(-1,1,1,1), "N must be greater than or equal to 0")
 })
