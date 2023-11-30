@@ -20,3 +20,46 @@ test_that("test for error triggering in findBlocks",{
   expect_error(findBlocks(data.frame(runif(10))))
 })
 
+# test 3 for findBlocks() about warnings
+test_that("test for start warning message in findBlocks",{
+  set.seed(2)
+  x <- runif(20,1,10)
+  miss_block <- c(1,2,3,7,8,9,19)
+  x[miss_block] <- NA
+  # time series x has missing the block at the start
+  expect_warning(findBlocks(x))
+})
+
+# test 4 for findBlocks() about warnings
+test_that("test for end warning message in findBlocks",{
+  set.seed(2)
+  x <- runif(20,1,10)
+  miss_block <- c(2,3,7,8,9,19,20)
+  x[miss_block] <- NA
+  # time series x has missing the block at the end
+  expect_warning(findBlocks(x))
+})
+
+# test 5 for findBlocks() about no error
+test_that("test for no error message in findBlocks",{
+  set.seed(2)
+  x <- runif(20,1,10)
+  miss_block <- c(2,3,7,8,9,18,19)
+  x[miss_block] <- NA
+  # time series x has the right form for findBlocks()
+  expect_no_error(findBlocks(x))
+})
+
+# test 6 for findBlocks() about no warnings
+test_that("test no warning message in findBlocks",{
+  set.seed(2)
+  x <- runif(20,1,10)
+  miss_block <- c(2,3,7,8,9,18,19)
+  x[miss_block] <- NA
+  # time series x has the right form for findBlocks()
+  expect_no_warning(findBlocks(x))
+})
+
+
+
+
