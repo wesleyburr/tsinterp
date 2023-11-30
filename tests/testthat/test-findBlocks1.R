@@ -25,6 +25,7 @@ test_that("test for start warning message in findBlocks",{
   set.seed(2)
   x <- runif(20,1,10)
   miss_block <- c(1,2,3,7,8,9,19)
+  x[miss_block] <- NA
   # time series x has missing the block at the start
   expect_warning(findBlocks(x))
 })
@@ -34,6 +35,7 @@ test_that("test for end warning message in findBlocks",{
   set.seed(2)
   x <- runif(20,1,10)
   miss_block <- c(2,3,7,8,9,19,20)
+  x[miss_block] <- NA
   # time series x has missing the block at the end
   expect_warning(findBlocks(x))
 })
@@ -43,6 +45,7 @@ test_that("test for no error message in findBlocks",{
   set.seed(2)
   x <- runif(20,1,10)
   miss_block <- c(2,3,7,8,9,18,19)
+  x[miss_block] <- NA
   # time series x has the right form for findBlocks()
   expect_no_error(findBlocks(x))
 })
@@ -52,6 +55,7 @@ test_that("test no warning message in findBlocks",{
   set.seed(2)
   x <- runif(20,1,10)
   miss_block <- c(2,3,7,8,9,18,19)
+  x[miss_block] <- NA
   # time series x has the right form for findBlocks()
   expect_no_warning(findBlocks(x))
 })
